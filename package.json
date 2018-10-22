@@ -15,7 +15,7 @@
     "react-brunch": "^1.0.6",
     "uglify-js-brunch": ">= 1.0 < 1.8",
     "express": "4.x",
-    "amqplib": "0.3.0",
+    "amqplib": "",
     "when": "",
     "node-uuid": "",
     "body-parser": "",
