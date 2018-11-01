@@ -1,0 +1,67 @@
+<div class="section-hidden section-visible">
+    <h2>Change {{ queue.getName() }}</h2>
+    <div class="hider" style="display:block;">
+        <form method="get">
+            <input type="hidden" name="_do" value="AddBinding">
+            <input type="hidden" name="vhost" value="{{ exchange.getVhost() }}">
+            <input type="hidden" name="exchange" value="{{ exchange.getName() }}">
+            <table class="form">
+                <tbody>
+                <tr>
+                    <th>
+                        <label>Bindings: </label>
+                    </th>
+                    <td>
+                        <table>
+                            <tr>
+                                <td><b>Source</b></td>
+                                <td><b>Routing key</b></td>
+                                <td><b>Destination</b></td>
+                                <td>&nbsp;</td>
+                            </tr>
+                            {% for binding in exchange.getBindings() %}
+                                <tr>
+                                    <td>{{ binding.getSource() ? binding.getSource() : '-' }}</td>
+                                    <td>{{ binding.getRoutingKey() }}</td>
+                                    <td>
+                                        {{ binding.getDestination() }}
+                                        {% if binding.getSource() %}
+                                            <a href="/exchange/edit?vhost={{ binding.getVhost() }}&exchange={{ binding.getSource() }}&queue={{ binding.getDestination() }}&properties_key={{ binding.getPropertiesKey() }}&_do=SureDelete" title="Delete binding" class="red">[x]</a>
+                                        {% endif %}
+                                    </td>
+                                    <td>&nbsp;</td>
+                                </tr>
+                            {% else %}
+                                <tr>
+                                    <td colspan="4">
+                                        This exchange does not have any bindings yet.
+                                    </td>
+                                </tr>
+                            {% endfor %}
+
+                            <tr>
+                                <td>{{ exchange.getName() }}</td>
+                                <td><input type="text" name="routing_key" placeholder="routing key" value=""></td>
+                                <td>
+                                    <select name="queue">
+                                        <option value="">Please choose an exchange</option>
+                                        {% for queue in vhost_queues %}
+                                            <option>{{ queue.getName() }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </td>
+                                <td>
+                                    <input type="submit" value="Add binding">
+                                </td>
+                            </tr>
+
+                        </table>
+                    </td>
+                </tr>
+
+                </tbody>
+            </table>
+
+        </form>
+    </div>
+</div>

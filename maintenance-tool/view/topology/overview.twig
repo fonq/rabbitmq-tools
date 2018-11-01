@@ -1,0 +1,32 @@
+{##}
+<h1>Topology</h1>
+<div class="section section-visible">
+    <h2 class="updatable"> All exchange -> topic -> queue mappings ({{ table_data|length }})</h2>
+</div>
+
+
+<div class="updatable">
+
+    <table class="list">
+        <thead>
+        <tr>
+            <th>Vhost</th>
+            <th>Exchange</th>
+            <th>Routing key</th>
+            <th>Consumers</th>
+        </tr>
+        </thead>
+        <tbody>
+            {% for tr in table_data %}
+                <tr>
+                    <td>{{ tr.getVhostName() }}</td>
+                    <td>{{ tr.getExchangeName() }}</td>
+                    <td><a href="/message/generate?vhost={{ tr.getVhostName() }}&exchange={{ tr.getLastExchangeName() }}&routing_key={{ tr.getBindingName() }}">{{ tr.getBindingName() }}</a></td>
+                    <td>{{ tr.getQueueName() }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+

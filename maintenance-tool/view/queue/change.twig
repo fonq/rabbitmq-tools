@@ -1,0 +1,151 @@
+<div class="section-hidden section-visible">
+    <h2>Change {{ queue.getName() }}</h2>
+    <div class="hider" style="display:block;">
+        <form method="post">
+            <input type="hidden" name="_do" value="ApplyChanges">
+            <table class="form">
+                <tbody>
+                {#
+                <tr>
+                    <th><label>Name:</label></th>
+                    <td><input type="text" name="name"><span class="mand">*</span></td>
+                </tr>
+                #}
+                <tr>
+                    <th><label>Durability:</label></th>
+                    <td>
+                        <select name="durable">
+                            <option value="true">Durable</option>
+                            <option value="false">Transient</option>
+                        </select>
+                    </td>
+                </tr>
+
+                <tr>
+                    <th><label>Auto delete: <span class="help" id="queue-auto-delete"></span></label></th>
+                    <td>
+                        <select name="auto_delete">
+                            <option value="false">No</option>
+                            <option value="true">Yes</option>
+                        </select>
+                    </td>
+                </tr>
+
+                <tr>
+                    <th><label>Bindings: </label></th>
+                    <td>
+                        <table>
+                            <tr>
+                                <td><b>Source</b></td>
+                                <td><b>Routing key</b></td>
+                                <td><b>Destination</b></td>
+                            </tr>
+                            {% for binding in queue.getBindings() %}
+                                <tr>
+                                    <td>{{ binding.getSource() ? binding.getSource() : '-' }}</td>
+                                    <td>{{ binding.getRoutingKey() }}</td>
+                                    <td>
+                                        {{ binding.getDestination() }}
+                                        {% if binding.getSource() %}
+                                            <a href="/queue/change?vhost={{ binding.getVhost() }}&source={{ binding.getSource() }}&queue={{ binding.getDestination() }}&properties_key={{ binding.getPropertiesKey() }}&_do=SureDelete" title="Delete binding" class="red">[x]</a>
+                                        {% endif %}
+
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </table>
+                    </td>
+                </tr>
+
+                <tr>
+                    <th><label>Arguments:</label></th>
+                    <td>
+                        <div class="multifield" id="arguments">
+                            <table class="mf">
+                                <tbody>
+                                    {% for arg_key, arg_value in queue.getArguments() %}
+                                        <tr>
+                                            <td>
+                                                <input type="text" id="arguments_{{ loop.index }}_mfkey" name="arguments_{{ loop.index }}_mfkey" value="{{ arg_key }}">
+                                            </td>
+                                            <td class="equals">=</td>
+                                            <td>
+                                                <input type="text" id="arguments_{{ loop.index }}_mfvalue" name="arguments_{{ loop.index }}_mfvalue" value="{{ arg_value }}">
+                                                <select id="arguments_{{ loop.index }}_mftype" name="arguments_{{ loop.index }}_mftype">
+                                                    <option value="string">String</option>
+                                                    <option value="number">Number</option>
+                                                    <option value="boolean">Boolean</option>
+                                                    <option value="list">List</option>
+                                                </select>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                    <tr>
+                                        <td>
+                                            <input type="text" id="arguments_{{ queue.countArguments() + 1 }}_mfkey" name="arguments_{{ queue.countArguments() + 1 }}_mfkey" value="{{ arg_key }}">
+                                        </td>
+                                        <td class="equals">=</td>
+                                        <td>
+                                            <input type="text" id="arguments_{{ queue.countArguments() + 1 }}_mfvalue" name="arguments_{{ queue.countArguments() + 1 }}_mfvalue" value="">
+                                            <select id="arguments_{{ queue.countArguments() + 1 }}_mftype" name="arguments_{{ queue.countArguments() + 1 }}_mftype">
+                                                <option value="string">String</option>
+                                                <option value="number">Number</option>
+                                                <option value="boolean">Boolean</option>
+                                                <option value="list">List</option>
+                                            </select>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <table class="argument-links">
+                            <tbody>
+                            <tr>
+                                <td>Add</td>
+                                <td>
+                                    <span class="argument-link" field="arguments" key="x-message-ttl"
+                                          type="number">Message TTL</span> <span class="help"
+                                                                                 id="queue-message-ttl"></span>
+                                    |
+                                    <span class="argument-link" field="arguments" key="x-expires" type="number">Auto expire</span>
+                                    <span class="help" id="queue-expires"></span> |
+                                    <span class="argument-link" field="arguments" key="x-max-length"
+                                          type="number">Max length</span> <span class="help"
+                                                                                id="queue-max-length"></span> |
+                                    <span class="argument-link" field="arguments" key="x-max-length-bytes"
+                                          type="number">Max length bytes</span> <span class="help"
+                                                                                      id="queue-max-length-bytes"></span>
+                                    |
+                                    <span class="argument-link" field="arguments" key="x-overflow"
+                                          type="string">Overflow behaviour</span> <span class="help"
+                                                                                        id="queue-overflow"></span><br>
+                                    <span class="argument-link" field="arguments" key="x-dead-letter-exchange"
+                                          type="string">Dead letter exchange</span> <span class="help"
+                                                                                          id="queue-dead-letter-exchange"></span>
+                                    |
+                                    <span class="argument-link" field="arguments"
+                                          key="x-dead-letter-routing-key"
+                                          type="string">Dead letter routing key</span> <span class="help"
+                                                                                             id="queue-dead-letter-routing-key"></span>
+                                    |
+                                    <span class="argument-link" field="arguments" key="x-max-priority"
+                                          type="number">Maximum priority</span> <span class="help"
+                                                                                      id="queue-max-priority"></span><br>
+                                    <span class="argument-link" field="arguments" key="x-queue-mode"
+                                          type="string" value="lazy">Lazy mode</span> <span class="help"
+                                                                                            id="queue-lazy"></span>
+                                    <span class="argument-link" field="arguments" key="x-queue-master-locator"
+                                          type="string" value="">Master locator</span> <span class="help"
+                                                                                             id="queue-master-locator"></span>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+            <input type="submit" value="Change queue">
+        </form>
+    </div>
+</div>

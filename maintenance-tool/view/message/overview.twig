@@ -1,0 +1,60 @@
+<div class="section-hidden section-visible">
+
+    <h2>Queue messages {{ queue.getName() }}</h2>
+    <div class="hider" style="display:block;">
+        <form method="get" id="move_message_form" >
+            <input type="hidden" id="fld_do" name="_do" value="">
+
+            
+            <tr>
+                <th><label>To queue:</label></th>
+                <td>
+                    <select name="vhost_name" class="autosubmit">
+                        {% if vhosts %}
+                            {% for vhost in vhosts %}
+                                <option{{ vhost_name == vhost.getName()|trim ? ' selected="selected"' }}>{{ vhost.getName() }}</option>
+                            {% endfor %}
+                        {% endif %}
+                    </select>
+
+                    <select name="queue_name" class="autosubmit">
+                        {% if vhost_queues %}
+                            <option value="">Please choose a queue</option>
+                            {% for queue in vhost_queues %}
+                                <option{{ queue_name == queue.getName()|trim ? ' selected="selected"' }}>{{ queue.getName() }}</option>
+                            {% endfor %}
+                        {% endif %}
+                    </select>
+                </td>
+            </tr>
+
+            <table class="form">
+                <tbody>
+                    {% for message in messages %}
+                        <tr>
+                            <td>
+                                {{ dump(message.getProperties()) }}
+                                {#
+                                <table>
+                                    <tr><td></td><td></td></tr>
+                                </table>
+                                #}
+                            </td>
+                            <td>
+                                {{ message.payload }}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                {# { queue } #}
+
+
+                properties
+                routing_key
+
+
+                </tbody>
+            </table>
+            <input type="submit" id="move_messases_btn" value="Move messages">
+        </form>
+    </div>
+</div>
