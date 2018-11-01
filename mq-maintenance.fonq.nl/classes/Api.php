@@ -50,6 +50,11 @@ class Api
             throw new LogicException("Expected " . join(", ", $allowedOptions) . ' as requestType');
         }
 
+        if(empty($this->api_user))
+        {
+            throw new LogicException("Username not set, please update configfile.");
+        }
+
         $url = $this->getUrl($endpoint);
 
         $ch = curl_init();

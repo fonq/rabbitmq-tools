@@ -54,10 +54,24 @@ if(isset($_REQUEST['_do']) && !empty($_REQUEST['_do']))
     $controller->$method();
 }
 
-$parseData = [
-    'title' => $controller->getTitle(),
-    'content' => $controller->getContent(),
-    'selected_menu_item' => $controller->getSelectedMenuItem(),
-    'status_message' => $controller->getStatusMessage()
-];
+try
+{
+    $parseData = [
+        'title' => $controller->getTitle(),
+        'content' => $controller->getContent(),
+        'selected_menu_item' => $controller->getSelectedMenuItem(),
+        'status_message' => $controller->getStatusMessage()
+    ];
+}
+catch (Exception $exception)
+{
+    $controller  = new \Controller\ExceptionPage();
+    $controller->setException($exception);
+    $parseData = [
+        'title' => $controller->getTitle(),
+        'content' => $controller->getContent(),
+        'selected_menu_item' => $controller->getSelectedMenuItem(),
+        'status_message' => $controller->getStatusMessage()
+    ];
+}
 echo Template::parse('layout.twig', $parseData);

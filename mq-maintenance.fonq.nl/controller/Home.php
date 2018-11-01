@@ -5,6 +5,7 @@ use Classes\AbstractController;
 use Classes\StatusMessage;
 use Classes\StatusMessageButton;
 use Classes\Template;
+use Classes\Exception\HttpException;
 
 class Home extends AbstractController
 {
@@ -34,7 +35,7 @@ class Home extends AbstractController
 
     /**
      * @return string
-     * @throws \Classes\Exception\HttpException
+     * @throws HttpException
      */
     function getContent(): string
     {
