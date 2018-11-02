@@ -6,39 +6,47 @@ ini_set('display_errors', 1);
 error_reporting(E_ALL);
 
 require_once '../vendor/autoload.php';
-require_once '../config.php';
-session_start();
-
-// Request URI without GET vars.
-$base_request_uri = strpos($_SERVER['REQUEST_URI'],'?') ? explode('?', $_SERVER['REQUEST_URI'])[0] : $_SERVER['REQUEST_URI'];
-
-$url_parts = explode('/', $base_request_uri);
-unset($url_parts[0]);
-
-if($base_request_uri == '/')
-{
-    $controllerClassName = '\\Controller\\Home';
-}
-else
-{
-    $controllerClassName = '\\Controller\\' . ucfirst($url_parts[1]) . '\\' . ucfirst($url_parts[2]);
-}
-
 try
 {
-    if(class_exists($controllerClassName))
+    if(file_exists('../config.php'))
     {
-        $controller = new $controllerClassName();
+        require_once '../config.php';
     }
-    if(!isset($controller))
+    else
     {
-        throw new Exception("Controller not found");
+       throw new Exception("Config file missing, did you create one?");
     }
-    if(!$controller instanceof AbstractController)
+    session_start();
+
+    // Request URI without GET vars.
+    $base_request_uri = strpos($_SERVER['REQUEST_URI'],'?') ? explode('?', $_SERVER['REQUEST_URI'])[0] : $_SERVER['REQUEST_URI'];
+
+    $url_parts = explode('/', $base_request_uri);
+    unset($url_parts[0]);
+
+    if($base_request_uri == '/')
     {
-        throw new Exception("Controller class must implement AbstractController.");
+        $controllerClassName = '\\Controller\\Home';
     }
-}
+    else
+    {
+        $controllerClassName = '\\Controller\\' . ucfirst($url_parts[1]) . '\\' . ucfirst($url_parts[2]);
+    }
+
+
+        if(class_exists($controllerClassName))
+        {
+            $controller = new $controllerClassName();
+        }
+        if(!isset($controller))
+        {
+            throw new Exception("Controller not found");
+        }
+        if(!$controller instanceof AbstractController)
+        {
+            throw new Exception("Controller class must implement AbstractController.");
+        }
+    }
 catch (Exception $exception)
 {
     $controller  = new \Controller\ExceptionPage();
