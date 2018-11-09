@@ -1,0 +1,27 @@
+<div class="section-hidden section-visible">
+
+    <h2>Users {{ users|length }}</h2>
+    <div class="hider" style="display:block;">
+        <form method="get" id="move_message_form" >
+            <input type="hidden" id="fld_do" name="_do" value="">
+
+            <table class="form">
+                <tbody>
+                    <thead>
+                        <tr>
+                            <td>Name</td>
+                        </tr>
+                    </thead>
+
+                    {% for user in users %}
+                        <tr>
+                            <td style="vertical-align: top">
+                                {{ user.getName() }}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </form>
+    </div>
+</div>

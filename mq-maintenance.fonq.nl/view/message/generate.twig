@@ -1,0 +1,129 @@
+<div class="section-hidden section-visible">
+    <h2>Publish messages</h2>
+    <div class="hider" style="display:block;">
+        <form method="post" id="generate_messages_form">
+            <input type="hidden" id="fld_do" name="_do" value="">
+
+            <table class="form" style="width:800px;">
+                <tbody>
+                    {% if queue_name %}
+                        <tr>
+                            <td colspan="2">
+
+                                These messages will be published to the default exchange with routing key <strong>{{ queue_name }}</strong>, routing them to this queue.
+                                This is not topic based routing so not the way messages are routed normally at Fonq.
+                                In order to do so set the exchange to topic and fill in a valid routingkey.
+                                <br /><br />
+
+                            </td>
+                        </tr>
+                    {% endif %}
+                    <tr>
+                        <th><label>Vhost:</label></th>
+                        <td>
+                            <select name="vhost_name" class="autosubmit">
+                                {% for vhost in vhosts %}
+                                    <option {{ vhost_name == vhost.getName() ? 'selected' }} value="{{ vhost.getName() }}">{{ vhost.getName() }}</option>
+                                {% endfor %}
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>
+                            <label>Exchange:</label>
+                        </th>
+                        <td>
+                            <select name="exchange">
+                                {% for exchange in exchanges %}
+                                    {% if exchange.getName() is empty %}
+                                        <option value="amq.default">Default</option>
+                                    {% else %}
+                                        <option {{ current_exhange_name == exchange.getName() ? 'selected' }} value="{{ exchange.getName() }}">{{ exchange.getName() }}</option>
+                                    {% endif %}
+                                {% endfor %}
+                            </select>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <th>
+                            <label>Routing key:</label>
+                        </th>
+                        <td>
+                            <input type="text" name="routing_key" value="{{ routing_key }}">
+                        </td>
+                    </tr>
+
+
+                    <tr>
+                        <th><label>Message count:</label></th>
+                        <td>
+                            <select name="message_count">
+                                <option value="1">1</option>
+                                <option value="2">2</option>
+                                <option value="3">3</option>
+                                <option value="4">4</option>
+                                <option value="5">5</option>
+                                <option value="10">10</option>
+                                <option value="15">15</option>
+                                <option value="20">20</option>
+                                <option value="50">50</option>
+                                <option value="100">100</option>
+                                <option value="500">500</option>
+                                <option value="1000">1.000</option>
+                                <option value="5000">5.000</option>
+                                <option value="10000">10.000</option>
+                            </select>
+                        </td>
+                    </tr>
+                    {#
+                    <tr>
+                        <th><label>Method:</label></th>
+                        <td>
+                            <select name="delivery_mode">
+                                <option value="1">Direct delivery (default exchange on the queue)</option>
+                                <option value="1">Topic based (based on binding / routing key)</option>
+                            </select>
+                        </td>
+                    </tr>
+                    #}
+                    <tr>
+                        <th><label>Delivery mode:</label></th>
+                        <td>
+                            <select name="delivery_mode">
+                                <option value="1">1 - Non-persistent</option>
+                                <option value="2">2 - Persistent</option>
+                            </select>
+                        </td>
+                    </tr>
+                <tr>
+                    <th>
+                        <label>
+                            Headers:
+                            <span class="help" id="message-publish-headers"></span>
+                        </label>
+                    </th>
+                    <td>
+                        <div class="multifield" id="headers"><table class="mf"><tbody><tr><td><input type="text" id="headers_1_mfkey" name="headers_1_mfkey" value=""></td><td class="equals"> = </td><td><input type="text" id="headers_1_mfvalue" name="headers_1_mfvalue" value=""> <select id="headers_1_mftype" name="headers_1_mftype"><option value="string">String</option><option value="number">Number</option><option value="boolean">Boolean</option><option value="list">List</option></select></td></tr></tbody></table></div>
+                    </td>
+                </tr>
+                <tr>
+                    <th>
+                        <label>
+                            Properties:
+                            <span class="help" id="message-publish-properties"></span>
+                        </label>
+                    </th>
+                    <td>
+                        <div class="multifield string-only" id="props"><table class="mf"><tbody><tr><td><input type="text" id="props_1_mfkey" name="props_1_mfkey" value=""></td><td class="equals"> = </td><td><input type="text" id="props_1_mfvalue" name="props_1_mfvalue" value=""> <input type="hidden" id="props_1_mftype" name="props_1_mftype" value="string"></td></tr></tbody></table></div>
+                    </td>
+                </tr>
+                <tr>
+                    <th><label>Payload:</label></th>
+                    <td><textarea name="payload"></textarea></td>
+                </tr>
+                </tbody></table>
+            <input type="submit" id="generate_messages_button" value="Publish">
+        </form>
+    </div>
+</div>

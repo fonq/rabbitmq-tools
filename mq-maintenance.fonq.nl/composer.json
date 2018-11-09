@@ -1,0 +1,26 @@
+{
+    "name": "anton/rabbit-maintenance",
+    "description": "Rabbit MQ maintenance",
+    "type": "project",
+    "require": {
+        "php": "^7.1",
+        "ext-curl": "^7.1",
+        "ext-json": "^1.5",
+        "twig/twig": "1.24.1",
+        "monolog/monolog": "^1.24",
+        "php-amqplib/php-amqplib": "^2.8"
+    },
+    "authors": [
+        {
+            "name": "Anton Boutkam",
+            "email": "anton.boutkam@fonq.nl"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "Model\\": "model/",
+            "Controller\\": "controller/",
+            "Classes\\": "classes/"
+        }
+    }
+}

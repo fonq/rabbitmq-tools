@@ -1,0 +1,147 @@
+<h1>Exchanges</h1>
+
+<div class="section section-visible">
+    <h2 class="updatable"> All exchanges ({{ exchanges.count() }})</h2>
+</div>
+<div class="updatable">
+    <table class="list">
+        <thead>
+            <tr>
+                <th>Virtual host</th>
+                <th>Name</th>
+                <th>Type</th>
+                <th>Delete</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for exchange in exchanges %}
+                <tr class="alt{{ loop.index is odd? '1' : '2' }}">
+                    <td>{{ exchange.getVhost() }}</td>
+                    <td>
+                        <a href="/exchange/edit?vhost={{ exchange.getVhost() }}&exchange={{ exchange.getName() }}">{{ exchange.getName() }}</a>
+                    </td>
+                    <td><a href="#">{{ exchange.getType() }}</a></td>
+                    <td>
+                        {% if exchange.getName() and not  exchange.isSystemExchange() %}
+                            <abbr class="red" title="Delete exchange">
+                                <a href="/exchange/overview?vhost={{ exchange.getVhost() }}&exchange_name={{ exchange.getName() }}&_do=SureDelete">
+                                    Delete exchange
+                                </a>
+                            </abbr>
+                        {% endif %}
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<div class="section-hidden section-visible">
+    <h2>Add a new exchange</h2>
+    <div class="hider" style="display:block;">
+        <form method="post">
+            <input type="hidden" name="_do" value="AddExchange">
+            <table class="form">
+                <tbody>
+                    <tr>
+                        <th><label>Virtual host:</label></th>
+                        <td>
+                            <select name="vhost">
+                                {% for vhost in all_vhosts %}
+                                    <option {{ to_vhost == vhost.getName() ? 'selected' }} value="{{ vhost.getName() }}">{{ vhost.getName() }}</option>
+                                {% endfor %}
+                            </select>
+                        </td>
+                    </tr>
+
+                <tr>
+                    <th><label>Name:</label></th>
+                    <td>
+                        <input type="text" name="name">
+                        <span class="mand">*</span>
+                    </td>
+                </tr>
+                <tr>
+                    <th><label>Type:</label></th>
+                    <td>
+                        <select name="type">
+                            <option value="headers">headers</option>
+                            <option value="topic">topic</option>
+                            <option value="direct">direct</option>
+                            <option value="fanout">fanout</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <th><label>Durability:</label></th>
+                    <td>
+                        <select name="durable">
+                            <option value="true">Durable</option>
+                            <option value="false">Transient</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <th>
+                        <label>Auto delete: <span class="help" id="exchange-auto-delete"></span></label>
+                    </th>
+                    <td>
+                        <select name="auto_delete">
+                            <option value="false">No</option>
+                            <option value="true">Yes</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <th><label>Internal: <span class="help" id="exchange-internal"></span></label></th>
+                    <td>
+                        <select name="internal">
+                            <option value="false">No</option>
+                            <option value="true">Yes</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <th><label>Arguments:</label></th>
+                    <td>
+                        <div class="multifield" id="arguments">
+                            <table class="mf">
+                                <tbody>
+                                    <tr>
+                                        <td>
+                                            <input type="text" id="arguments_1_mfkey" name="arguments_1_mfkey" value="">
+                                        </td>
+                                        <td class="equals"> = </td>
+                                        <td>
+                                            <input type="text" id="arguments_1_mfvalue" name="arguments_1_mfvalue" value="">
+                                            <select id="arguments_1_mftype" name="arguments_1_mftype">
+                                                <option value="string">String</option>
+                                                <option value="number">Number</option>
+                                                <option value="boolean">Boolean</option>
+                                                <option value="list">List</option>
+                                            </select>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <table class="argument-links">
+                            <tbody>
+                                <tr>
+                                    <td>Add</td>
+                                    <td>
+                                        <span class="argument-link" field="arguments" key="alternate-exchange" type="string">Alternate exchange</span>
+                                        <span class="help" id="exchange-alternate"></span>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+            <input type="submit" value="Add exchange">
+        </form>
+    </div>
+</div>

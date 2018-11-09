@@ -1,0 +1,65 @@
+<html>
+<head>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+    <title>{{ title }}</title>
+
+    <script src="/js/ejs-1.0.min.js" type="text/javascript"></script>
+    <script src="/js/jquery-1.12.4.min.js" type="text/javascript"></script>
+    <script src="/js/global.js" type="text/javascript"></script>
+    <script src="/js/main.js" type="text/javascript"></script>
+    <link href="/css/main.css" rel="stylesheet" type="text/css">
+    <link href="/favicon.ico" rel="shortcut icon" type="image/x-icon">
+
+    <!--[if lte IE 8]>
+    <![endif]-->
+
+</head>
+<body>
+    <div id="outer">
+        {{ status_message|raw }}
+        <div id="header">
+
+            <div id="login-version" style="float: right">
+                <a id="logout_button" href="/logout">Logout</a>
+
+            </div>
+            <div id="logo">
+                <a href="/">
+                    <img src="/img/rabbitmqlogo.png" alt="RabbitMQ logo" width="204" height="37">
+                </a>
+            </div>
+            <div id="menu">
+                <ul id="tabs">
+                    <li><a href="/exchange/overview" class="{{ selected_menu_item == 'exchange' ? 'selected' }}">Exchanges</a></li>
+                    <li><a href="/" class="{{ selected_menu_item == 'queue' ? 'selected' }}">Queues</a></li>
+                    <li><a href="/message/generate" class="{{ selected_menu_item == 'message' ? 'selected' }}">Generate messages</a></li>
+                    <li><a href="/message/overview" class="{{ selected_menu_item == 'deadletter' ? 'selected' }}">Queue contents</a></li>
+                    <li><a href="/topology/overview" class="{{ selected_menu_item == 'topology' ? 'selected' }}">Topology</a></li>
+                    <li><a href="/user/overview" class="{{ selected_menu_item == 'user' ? 'selected' }}">Users</a></li>
+                </ul>
+            </div>
+
+        </div>
+        <div id="rhs"></div>
+        <div id="main">
+            {{ content|raw }}
+        </div>
+        <div id="footer">
+            <ul>
+                <li><a href="api/" target="_blank">HTTP API</a></li>
+                <li><a href="https://www.rabbitmq.com/admin-guide.html" target="_blank">Server Docs</a></li>
+                <li><a href="https://www.rabbitmq.com/getstarted.html" target="_blank">Tutorials</a></li>
+                <li><a href="https://groups.google.com/forum/#!forum/rabbitmq-users" target="_blank">Community Support</a></li>
+                <li><a href="https://rabbitmq-slack.herokuapp.com/" target="_blank">Community Slack</a></li>
+                <li><a href="http://www.rabbitmq.com/services.html" target="_blank">Commercial Support</a></li>
+                <li><a href="https://www.rabbitmq.com/plugins.html" target="_blank">Plugins</a></li>
+                <li><a href="http://www.rabbitmq.com/github.html" target="_blank">GitHub</a></li>
+                <li><a href="https://www.rabbitmq.com/changelog.html" target="_blank">Changelog</a></li>
+            </ul>
+        </div>
+    </div>
+    <div id="debug"></div>
+    <div id="scratch"></div>
+</body>
+</html>
