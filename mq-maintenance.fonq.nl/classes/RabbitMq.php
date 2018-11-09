@@ -9,11 +9,15 @@ use Model\MessageList;
 use Model\MessageModel;
 use Model\QueueList;
 use Model\QueueModel;
+use Model\UserList;
 use Model\VHostList;
 use Model\ExchangeList;
 use LogicException;
 use Model\VHostModel;
 use InvalidArgumentException;
+use PhpAmqpLib\Connection\AMQPStreamConnection;
+use PhpAmqpLib\Message\AMQPMessage;
+use PhpAmqpLib\Wire\AMQPTable;
 
 class RabbitMq
 {
@@ -24,29 +28,34 @@ class RabbitMq
     {
         return self::$api;
     }
+    public static function isLoggedIn():bool
+    {
+        return self::api()->isLoggedIn();
+    }
     public static function instance():RabbitMq
     {
         if(!self::$instance instanceof RabbitMq)
         {
             $config = getConfig();
-            self::$instance = new self($config['api_user'], $config['api_password'], $config['api_hostname'], $config['api_port']);
+            self::$instance = new self($config['api_hostname'], $config['api_port']);
         }
         return self::$instance;
     }
-    private function __construct($api_user, $api_pass, $api_host, $api_port)
+    private function __construct($api_host, $api_port)
     {
-        self::$api = new Api($api_user, $api_pass, $api_host, $api_port);
+        self::$api = new Api($api_host, $api_port);
     }
 
     /**
      * @param string $ack_requeue - ackmode determines whether the messages will be removed from the queue. If ackmode is ack_requeue_true or reject_requeue_true they will be requeued - if ackmode is ack_requeue_false or reject_requeue_false they will be removed.
      * @param string $vhost_name
      * @param string $queue_name
+     * @param int $limit
      * @return MessageList
      * @throws Exception\HttpException
      * @throws InvalidArgumentException
      */
-    function getMessages($ack_requeue, $vhost_name, $queue_name):MessageList
+    function getMessages($ack_requeue, $vhost_name, $queue_name, $limit = 50):MessageList
     {
         if(!in_array($ack_requeue, ['ack_requeue_false', 'ack_requeue_true']))
         {
@@ -56,10 +65,15 @@ class RabbitMq
 
         $model = (new class extends BaseModel{
             private $ack_requeue;
+            private $limit = 50;
 
             function setAckRequeue($ack_requeue)
             {
                 $this->ack_requeue = $ack_requeue;
+            }
+            function setLimit($limit)
+            {
+                $this->limit = $limit;
             }
             function __construct($message = []) {}
             function toApi(): array
@@ -77,7 +91,7 @@ class RabbitMq
                  * If truncate is present it will truncate the message payload if it is larger than the size given (in bytes).
                  */
                 return [
-                    "count" => 5000,
+                    "count" => $this->limit,
                     "ackmode" => $this->ack_requeue, // we are offering the messages manually
                     "encoding" => "auto",
                     "truncate" => 5000
@@ -85,6 +99,7 @@ class RabbitMq
             }
         });
         $model->setAckRequeue($ack_requeue);
+        $model->setLimit($limit);
 
         $messages = self::api()->post($endpoint, $model);
         if(empty($messages))
@@ -95,6 +110,26 @@ class RabbitMq
         return new MessageList($messages);
     }
 
+    /**
+     * @param $vhost
+     * @param $queue
+     * @throws Exception\HttpException
+     */
+    function purgeQueue($vhost, $queue)
+    {
+        $endpoint = '/queues/' . rawurlencode($vhost) . '/' . rawurlencode($queue) . '/contents';
+        self::api()->delete($endpoint);
+    }
+
+    /**
+     * @return UserList
+     * @throws Exception\HttpException
+     */
+    function getUsers():UserList
+    {
+        $queues = self::api()->get('/users/');
+        return new UserList($queues);
+    }
     /**
      * @return QueueList
      * @throws Exception\HttpException
@@ -164,6 +199,130 @@ class RabbitMq
     }
 
     /**
+     * @param $vhost_name
+     * @param $from_queue
+     * @return bool
+     * @throws Exception\HttpException
+     */
+    function requeueAll($vhost_name, $from_queue):bool
+    {
+        $connection = new AMQPStreamConnection(getConfig()['api_hostname'], getConfig()['amqp_port'], User::getApiUser(), User::getApiPass(), $vhost_name);
+        $channel = $connection->channel();
+
+        while($original_message = $channel->basic_get($from_queue)) {
+            if (!$original_message instanceof AMQPMessage) {
+                throw new LogicException("Expected an instance of AMQPMessage.");
+            }
+
+            if (!isset($original_message->get_properties()['application_headers'])) {
+                throw new LogicException("Could not requeue message, is this a dead lettered message? It should be.");
+            }
+            $AMQPTable = $original_message->get_properties()['application_headers'];
+
+            if (!$AMQPTable instanceof AMQPTable)
+            {
+                throw new LogicException("Could not requeue message, is this a dead lettered message? It should be.");
+            }
+            $routing_key = $AMQPTable->getNativeData()['x-first-death-queue'];
+
+            // Exchange is empty, which is default, which is direct, which means routing_key = queue_name
+            $exchange = '';
+
+            $original_properties = $original_message->get_properties();
+            $message = new MessageModel();
+            $message->setDeliveryMode($original_properties['delivery_mode']);
+            $message->setPayloadEncoding($original_message->getContentEncoding());
+            $message->setExchange($exchange);
+            $message->setVhost($vhost_name);
+            $message->setRoutingKey($routing_key);
+            $message->setPayload($original_message->getBody());
+
+            $this->publishMessage($vhost_name, '', $message);
+
+            // Remove the message fom the dead letter queue if no exception was trown from publishMessage
+            $channel->basic_ack($original_message->delivery_info['delivery_tag']);
+        }
+
+        $channel->close();
+        $connection->close();
+        return true;
+    }
+    /**
+     * @param $vhost_name
+     * @param $from_queue
+     * @param $to_queue
+     * @param $message_position
+     * @return bool
+     * @throws Exception\HttpException
+     */
+    function requeueMessage($vhost_name, $from_queue, $to_queue, $message_position):bool
+    {
+        $connection = new AMQPStreamConnection(getConfig()['api_hostname'], getConfig()['amqp_port'], User::getApiUser(), User::getApiPass(), $vhost_name);
+        $channel = $connection->channel();
+        $_SESSION['channel'] = $channel;
+
+        for($i = 1; $i <= $message_position; $i++)
+        {
+            $original_message = $channel->basic_get($from_queue);
+
+            if(!$original_message instanceof AMQPMessage)
+            {
+                throw new LogicException("Expected an instance of AMQPMessage.");
+            }
+
+            if($i == $message_position) {
+
+                // Exchange is empty, which is default, which is direct, which means routing_key = queue_name
+                $exchange = '';
+                $routing_key = $to_queue;
+
+                $original_properties = $original_message->get_properties();
+                $message = new MessageModel();
+                $message->setDeliveryMode($original_properties['delivery_mode']);
+                $message->setPayloadEncoding($original_message->getContentEncoding());
+                $message->setExchange($exchange);
+                $message->setVhost($vhost_name);
+                $message->setRoutingKey($routing_key);
+                $message->setPayload($original_message->getBody());
+
+                $this->publishMessage($vhost_name, '', $message);
+
+                // Remove the message fom the dead letter queue if no exception was trown from publishMessage
+                $channel->basic_ack($original_message->delivery_info['delivery_tag']);
+                $channel->close();
+                $connection->close();
+                return true;
+            }
+        }
+        $channel->close();
+        $connection->close();
+        return false;
+    }
+    function deleteMessage($vhost_name, $queue_name, $message_position):bool
+    {
+        $connection = new AMQPStreamConnection(getConfig()['api_hostname'], getConfig()['amqp_port'], User::getApiUser(), User::getApiPass(), $vhost_name);
+        $channel = $connection->channel();
+        $_SESSION['channel'] = $channel;
+
+        for($i = 1; $i <= $message_position; $i++)
+        {
+            $message = $channel->basic_get($queue_name);
+
+            if(!$message instanceof AMQPMessage)
+            {
+                throw new LogicException("Expected an instance of AMQPMessage.");
+            }
+
+            if($i == $message_position) {
+                $channel->basic_ack($message->delivery_info['delivery_tag']);
+                return true;
+            }
+        }
+        return false;
+    }
+
+
+    /**
      * @param null $vhost
      * @return ExchangeList
      * @throws Exception\HttpException
@@ -178,6 +337,7 @@ class RabbitMq
         {
             $exchanges = self::api()->get('/exchanges/' . rawurlencode($vhost));
         }
+
         return new ExchangeList($exchanges);
     }
 
@@ -248,20 +408,13 @@ class RabbitMq
     }
 
     /**
-     * @param QueueModel $originalQueue
-     * @param $new_name
-     * @return QueueModel
+     * @param QueueModel $queue
+     * @param BindingList $bindings
      * @throws Exception\HttpException
      */
-    function copyQueue(QueueModel $originalQueue, $new_name):QueueModel
+    function addBindings(QueueModel $queue, BindingList $bindings)
     {
-        $newQueue = clone $originalQueue;
-        $newQueue->setName($new_name);
-        $this->createQueue($newQueue);
-
-        $originalBindings = $originalQueue->getBindings();
-
-        foreach ($originalBindings as $binding)
+        foreach ($bindings as $binding)
         {
             if(!$binding instanceof BindingModel)
             {
@@ -274,9 +427,23 @@ class RabbitMq
             }
 
             // Messages should end up in the same queue, rest of the properties should remain the same.
-            $binding->setDestination($newQueue->getName());
+            $binding->setDestination($queue->getName());
             $this->addBinding($binding);
         }
+    }
+    /**
+     * @param QueueModel $originalQueue
+     * @param $new_name
+     * @return QueueModel
+     * @throws Exception\HttpException
+     */
+    function copyQueue(QueueModel $originalQueue, $new_name):QueueModel
+    {
+        $newQueue = clone $originalQueue;
+        $newQueue->setName($new_name);
+        $this->createQueue($newQueue);
+
+        $this->addBindings($newQueue, $originalQueue->getBindings());
         return $newQueue;
     }
 

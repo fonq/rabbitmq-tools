@@ -19,7 +19,11 @@
     <div id="outer">
         {{ status_message|raw }}
         <div id="header">
-            <ul id="topnav"></ul>
+
+            <div id="login-version" style="float: right">
+                <a id="logout_button" href="/logout">Logout</a>
+
+            </div>
             <div id="logo">
                 <a href="/">
                     <img src="/img/rabbitmqlogo.png" alt="RabbitMQ logo" width="204" height="37">
@@ -29,13 +33,13 @@
                 <ul id="tabs">
                     <li><a href="/exchange/overview" class="{{ selected_menu_item == 'exchange' ? 'selected' }}">Exchanges</a></li>
                     <li><a href="/" class="{{ selected_menu_item == 'queue' ? 'selected' }}">Queues</a></li>
-                    <li><a href="/message/generate" class="{{ selected_menu_item == 'message' ? 'selected' }}">Messages</a></li>
-                    {#
-                    <li><a href="/message/overview?vhost_name=/&queue_name=failed.dead" class="{{ selected_menu_item == 'deadletter' ? 'selected' }}">Dead letter</a></li>
-                    #}
+                    <li><a href="/message/generate" class="{{ selected_menu_item == 'message' ? 'selected' }}">Generate messages</a></li>
+                    <li><a href="/message/overview" class="{{ selected_menu_item == 'deadletter' ? 'selected' }}">Queue contents</a></li>
                     <li><a href="/topology/overview" class="{{ selected_menu_item == 'topology' ? 'selected' }}">Topology</a></li>
+                    <li><a href="/user/overview" class="{{ selected_menu_item == 'user' ? 'selected' }}">Users</a></li>
                 </ul>
             </div>
+
         </div>
         <div id="rhs"></div>
         <div id="main">

@@ -341,12 +341,13 @@ class QueueModel extends BaseModel
 
     /**
      * @param string $ack_requeue - ackmode determines whether the messages will be removed from the queue. If ackmode is ack_requeue_true or reject_requeue_true they will be requeued - if ackmode is ack_requeue_false or reject_requeue_false they will be removed.
+     * @param int $limit
      * @return MessageList
      * @throws \Classes\Exception\HttpException
      */
-    function getMessageList($ack_requeue):MessageList
+    function getMessageList($ack_requeue, $limit = 50):MessageList
     {
-        return RabbitMq::instance()->getMessages($ack_requeue, $this->getVHost(), $this->getName());
+        return RabbitMq::instance()->getMessages($ack_requeue, $this->getVHost(), $this->getName(), $limit);
     }
 
     /**

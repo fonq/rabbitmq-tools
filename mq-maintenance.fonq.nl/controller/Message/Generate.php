@@ -2,6 +2,7 @@
 namespace Controller\Message;
 
 use Classes\AbstractController;
+use Classes\DeferredAction;
 use Classes\RabbitMq;
 use Classes\StatusMessage;
 use Classes\StatusMessageButton;
@@ -43,12 +44,11 @@ class Generate extends AbstractController
             }
         }
 
-
         $message_count = $_POST['message_count'];
         $delivery_mode = $_POST['delivery_mode'];
         $payload = $_POST['payload'];
         $routing_key = $_POST['routing_key'];
-        $vhost = $_POST['vhost'];
+        $vhost = $_POST['vhost_name'];
         $exchange = $_POST['exchange'];
 
         $message  = new MessageModel();
@@ -67,11 +67,15 @@ class Generate extends AbstractController
             $rabbitmq->publishMessage($vhost, $exchange, $message);
         }
 
+        $back_url = DeferredAction::get('after_add_test_messages');
+        if($back_url)
+        {
+            $this->redirect($back_url);
+        }
+
         $this->addStatusMessage(
             (new StatusMessage("$message_count messages published to $exchange with routing key $routing_key."))
                 ->addButton(new StatusMessageButton('Close and reload', '/'))
-
-
         );
         $this->redirect('/');
         exit();
@@ -92,10 +96,9 @@ class Generate extends AbstractController
      */
     function getContent(): string
     {
-        $vhost_name = isset($_REQUEST['vhost']) ? $_REQUEST['vhost'] : null;
+        $vhost_name = isset($_REQUEST['vhost_name']) ? $_REQUEST['vhost_name'] : null;
         $queue_name = isset($_REQUEST['queue_name']) ? $_REQUEST['queue_name'] : null;
         $exchange = isset($_REQUEST['exchange']) ? $_REQUEST['exchange'] : null;
-
         $routing_key = isset($_REQUEST['routing_key']) ? $_REQUEST['routing_key'] : null;
 
         if($queue_name && !$routing_key)

@@ -4,6 +4,7 @@ namespace Controller\Topology;
 class ComboHelper
 {
     public static $last_exchange_name;
+    public static $last_vhost_name;
     public $vhost_name;
     public $exchange_name;
     public $binding_name;
@@ -25,11 +26,6 @@ class ComboHelper
         $this->vhost_name = $vhost_name;
     }
 
-    public function getLastExchangeName()
-    {
-        return self::$last_exchange_name;
-    }
-
     /**
      * @return mixed
      */
@@ -43,7 +39,6 @@ class ComboHelper
      */
     public function setExchangeName($exchange_name): void
     {
-        self::$last_exchange_name = $exchange_name;
         $this->exchange_name = $exchange_name;
     }
 

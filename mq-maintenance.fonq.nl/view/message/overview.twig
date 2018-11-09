@@ -3,58 +3,134 @@
     <h2>Queue messages {{ queue.getName() }}</h2>
     <div class="hider" style="display:block;">
         <form method="get" id="move_message_form" >
-            <input type="hidden" id="fld_do" name="_do" value="">
+            <select name="vhost_name" class="autosubmit">
+                <option value="">Please choose a vhost</option>
+                {% for vhost_item in vhosts %}
+                    <option {{ vhost_name == vhost_item.getName() ? 'selected' }}>{{ vhost_item.getName() }}</option>
+                {% endfor %}
+            </select>
 
-            
-            <tr>
-                <th><label>To queue:</label></th>
-                <td>
-                    <select name="vhost_name" class="autosubmit">
-                        {% if vhosts %}
-                            {% for vhost in vhosts %}
-                                <option{{ vhost_name == vhost.getName()|trim ? ' selected="selected"' }}>{{ vhost.getName() }}</option>
-                            {% endfor %}
-                        {% endif %}
-                    </select>
+            <select name="queue_name" class="autosubmit">
+                {% if vhost_name %}
+                    <option value="">Please choose a queue</option>
+                    {% for queue_item in queues %}
+                        <option {{ queue_name == queue_item.getName() ? 'selected' }}>
+                            {{ queue_item.getName() }}
+                        </option>
+                    {% endfor %}
+                {% else %}
+                    <option value="">Choose a vhost first</option>
+                {% endif %}
+            </select>
 
-                    <select name="queue_name" class="autosubmit">
-                        {% if vhost_queues %}
-                            <option value="">Please choose a queue</option>
-                            {% for queue in vhost_queues %}
-                                <option{{ queue_name == queue.getName()|trim ? ' selected="selected"' }}>{{ queue.getName() }}</option>
-                            {% endfor %}
-                        {% endif %}
-                    </select>
-                </td>
-            </tr>
+            <select name="limit" class="autosubmit">
+                <option{{ limit == 1 ? ' selected' }} value="1">1 message</option>
+                <option{{ limit == 5 ? ' selected' }} value="5">5 message</option>
+                <option{{ limit == 10 ? ' selected' }} value="10">10 messages</option>
+                <option{{ limit == 10 ? ' selected' }} value="10">10 messages</option>
+                <option{{ limit == 20 ? ' selected' }} value="20">20 messages</option>
+                <option{{ limit == 40 ? ' selected' }} value="40">40 messages</option>
+                <option{{ limit == 50 ? ' selected' }} value="50">50 messages</option>
+                <option{{ limit == 100 ? ' selected' }} value="100">100 messages</option>
+                <option{{ limit == 200 ? ' selected' }} value="200">200 messages</option>
+            </select>
 
-            <table class="form">
+            {% if  queue_name == 'failed.dead' %}
+                <a class="info f-right" href="/message/overview?vhost_name={{ vhost_name|url_encode }}&queue_name={{ queue_name|url_encode }}&limit={{ limit }}&_do=RequeueAll">
+                    Requeue all
+                </a>
+            {% endif %}
+
+            <a class="danger f-right" href="/message/overview?vhost_name={{ vhost_name|url_encode }}&queue_name={{ queue_name|url_encode }}&limit={{ limit }}&_do=ConfirmPurge">
+                Purge queue
+            </a>
+
+            <a class="info f-right" href="/message/generate?vhost_name={{ vhost_name|url_encode }}&queue_name={{ queue_name|url_encode }}">
+                Add test message(s)
+            </a>
+
+            <a class="info f-right" href="/queue/change?vhost={{ vhost_name|url_encode }}&queue={{ queue_name|url_encode }}">
+                Queue settings
+            </a>
+        </form>
+
+        {% if messages %}
+            <table class="form" style="margin-top:30px;">
                 <tbody>
+                    <thead>
+                        <tr>
+                            <td>Routing key</td>
+                            <td>Payload</td>
+                            <td></td>
+                        </tr>
+                    </thead>
                     {% for message in messages %}
                         <tr>
-                            <td>
-                                {{ dump(message.getProperties()) }}
-                                {#
-                                <table>
-                                    <tr><td></td><td></td></tr>
-                                </table>
-                                #}
+                            <td style="vertical-align: top">
+                                {{ message.getRoutingKey() }}
                             </td>
                             <td>
-                                {{ message.payload }}
+                                <div style="width:900px;height:250px;overflow: scroll;border:1px solid black">
+                                    <pre>{{ message.getPrettyfiedPayload() }}</pre>
+                                </div>
+                            </td>
+                            <td style="vertical-align: top">
+                                <div style="margin-bottom: 20px;">
+                                    {% if message.getProperties().headers['x-death'] is iterable %}
+                                        <a class="info" href="/queue/change?vhost={{ vhost_name|url_encode }}&queue={{ message.getProperties().headers['x-first-death-queue'] }}">
+                                            Queue settings
+                                        </a>
+
+                                        <a class="info" href="/message/overview?vhost_name={{ vhost_name|url_encode }}&queue_name={{ message.getProperties().headers['x-first-death-queue'] }}  ">
+                                            Queue contents
+                                        </a>
+
+                                        <a class="info" href="{{ message.getRequeueUrl() }}/message/overview?vhost_name={{ vhost_name|url_encode }}&queue_name={{ queue_name|url_encode }}&limit={{ limit }}&delivery_tag={{ loop.index }}&_do=Requeue&original_queue={{ message.getProperties().headers['x-first-death-queue']|url_encode }}&exchange={{ message.getProperties().headers['x-first-death-exchange']|url_encode}}">
+                                            Requeue
+                                        </a>
+                                    {% endif %}
+                                    <a class="danger" href="/message/overview?vhost_name={{ vhost_name|url_encode }}&queue_name={{ queue_name|url_encode }}&limit={{ limit }}&_do=DeleteMessage&delivery_tag={{ loop.index }}">
+                                        Delete
+                                    </a>
+                                    <div class="cl"></div>
+                                </div>
+
+
+                                <table>
+                                    {% if message.getProperties().headers['x-death'] %}
+                                        <tr>
+                                            <td>Original queue</td>
+                                            <td>
+                                                <a href="/message/overview?vhost_name={{ vhost_name|url_encode }}&queue_name={{ message.getProperties().headers['x-first-death-queue']|url_encode }}">
+                                                    {{ message.getProperties().headers['x-first-death-queue'] }}
+                                                </a>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Reason</td>
+                                            <td>{{ message.getProperties().headers['x-first-death-reason'] }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Orignal exchange</td>
+                                            <td>{{ message.getProperties().headers['x-first-death-exchange'] ? message.getProperties().headers['x-first-death-exchange'] : 'Direct' }}</td>
+                                        </tr>
+
+                                    {% endif %}
+                                    <tr>
+                                        <td>Delivery mode</td>
+                                        <td>{{ message.getProperties()['delivery_mode'] == '2' ? 'Persistent' : 'Non persistent' }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Routing key</td>
+                                        <td>{{ message.getRoutingKey() }}</td>
+                                    </tr>
+
+                                </table>
                             </td>
                         </tr>
                     {% endfor %}
-                {# { queue } #}
-
-
-                properties
-                routing_key
-
-
                 </tbody>
             </table>
-            <input type="submit" id="move_messases_btn" value="Move messages">
-        </form>
+        {% endif %}
     </div>
 </div>

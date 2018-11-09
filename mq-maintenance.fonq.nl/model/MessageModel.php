@@ -1,6 +1,8 @@
 <?php
 namespace Model;
 
+use Classes\Utils;
+
 class MessageModel extends BaseModel
 {
     private $vhost;
@@ -55,17 +57,33 @@ class MessageModel extends BaseModel
     {
         $this->headers = $headers;
     }
+    function getHeaders()
+    {
+        return $this->headers;
+    }
     function setDeliveryMode($delivery_mode)
     {
         $this->delivery_mode = $delivery_mode;
+    }
+    function getDeliveryMode()
+    {
+        return $this->delivery_mode;
     }
     function setExchange($exchange)
     {
         $this->exchange = $exchange;
     }
+    function getExchange()
+    {
+        return $this->exchange;
+    }
     function setVhost($vhost)
     {
         $this->vhost = $vhost;
+    }
+    function getVhost()
+    {
+        return $this->vhost;
     }
     function setRoutingKey($routing_key)
     {
@@ -75,9 +93,22 @@ class MessageModel extends BaseModel
     {
         $this->payload = $payload;
     }
+    function getPayload()
+    {
+        return $this->payload;
+    }
+    function getPrettyfiedPayload()
+    {
+        return Utils::prettifyJson($this->payload);
+    }
+
     function setPayloadEncoding($payload_encoding)
     {
         $this->payload_encoding = $payload_encoding;
+    }
+    function getPayloadEncoding()
+    {
+        return $this->payload_encoding;
     }
     function setProperties($properties)
     {

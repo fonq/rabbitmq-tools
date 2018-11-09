@@ -74,6 +74,9 @@ class Overview extends AbstractController
                         $combohelper->setQueueName($queue->getName());
                         $table[] = $combohelper;
                         $combohelper = new ComboHelper();
+                        $combohelper->setVhostName($vhost->getName());
+                        $combohelper->setExchangeName($exchange->getName());
+
                     }
                 }
             }

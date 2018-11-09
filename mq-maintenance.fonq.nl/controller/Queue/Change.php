@@ -2,12 +2,14 @@
 namespace Controller\Queue;
 
 use Classes\AbstractController;
+use Classes\DeferredAction;
 use Classes\Exception\HttpException;
 use Classes\MoveHelper;
 use Classes\RabbitMq;
 use Classes\StatusMessage;
 use Classes\StatusMessageButton;
 use Classes\Template;
+use Model\BindingModel;
 
 class Change extends AbstractController
 {
@@ -37,6 +39,7 @@ class Change extends AbstractController
         $tmpQueueName = $currentQueue->getName().'.'.time();
         RabbitMq::instance()->copyQueue($currentQueue, $tmpQueueName);
 
+        $originalBindings = $currentQueue->getBindings();
         // 2. Remove the bindings of the original queue to stop messages from landing there.
         try
         {
@@ -50,7 +53,7 @@ class Change extends AbstractController
         // 3. Move the messages to the temporary queue.
         MoveHelper::moveMessages($currentQueue->getVHost(), $this->queue_name, $this->vhost_name, $tmpQueueName);
 
-        // 4. Re create the original queue.
+        // 4. Re create the original queue with new settings
         $arguments = [];
         foreach ($_POST as $key => $value)
         {
@@ -68,16 +71,17 @@ class Change extends AbstractController
         // 5. Delete the queue that we want to change.
         RabbitMq::instance()->deleteQueue($this->vhost_name, $currentQueue->getName());
 
-        // 6. Re-create the queue with the newly added or removed behaviors.
+        // 6. Re-create the queue with the newly added or removed behaviors and bindings.
         RabbitMq::instance()->createQueue($currentQueue);
+        RabbitMq::instance()->addBindings($currentQueue, $originalBindings);
 
         // 7. Move the messages back to the original queue.
         MoveHelper::moveMessages($this->vhost_name, $tmpQueueName, $this->vhost_name, $currentQueue->getName());
 
         // 8. Delete the placeholder queue
         RabbitMq::instance()->deleteQueue($this->vhost_name, $tmpQueueName);
-
     }
+
     function doApplyChanges()
     {
         try{
@@ -88,12 +92,15 @@ class Change extends AbstractController
         {
             $this->addStatusMessage(new StatusMessage("Could not change the queue, got the following error: ".$e->getMessage()));
         }
-        $this->redirect('/');
+        
+        $this->redirect($_SERVER['REQUEST_URI']);
     }
+
     function getTitle(): string
     {
         return 'Change ';
     }
+
     function doSureDelete()
     {
         $properties_key = $_GET['properties_key'];
@@ -114,12 +121,15 @@ class Change extends AbstractController
             ->addButton(new StatusMessageButton('Yes i am sure', '/binding/delete?' . $ok_query))
             ->addButton(new StatusMessageButton('No take me out of here', '/queue/change?' . $cancel_query)));
     }
+
     function getContent(): string
     {
+        DeferredAction::register('after_add_test_messages', $_SERVER['REQUEST_URI']);
         $RabbitMq = RabbitMq::instance();
         try
         {
             $viewData = [
+                'vhost' => $this->vhost_name,
                 'vhosts' => $RabbitMq->getVHosts(),
                 'queue' => $RabbitMq->getQueue($this->vhost_name, $this->queue_name)
             ];

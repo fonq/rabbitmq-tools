@@ -25,6 +25,7 @@ node_modules/
 
 #composer data
 mq-maintenance.fonq.nl/vendor/*
+mq-maintenance.fonq.nl/log/*
 mq-maintenance.fonq.nl/config.php
 
 # Brunch folder for temporary files.

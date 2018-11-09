@@ -13,15 +13,11 @@ class Api
     const HTTP_ACCESS_REFUSED = 401;
     const HTTP_SUCCESS_NO_OUTPUT = 204;
 
-    private $api_user;
-    private $api_pass;
     private $api_host;
     private $api_port;
 
-    function __construct($api_user, $api_pass, $api_host, $api_port)
+    function __construct($api_host, $api_port)
     {
-        $this->api_user = $api_user;
-        $this->api_pass = $api_pass;
         $this->api_host = $api_host;
         $this->api_port = $api_port;
     }
@@ -37,6 +33,19 @@ class Api
     {
         return 'http://' . $this->api_host  . ':' . $this->api_port . '/api' . $endpoint;
     }
+    function isLoggedIn():bool
+    {
+        $ch = $this->getCurl('/overview', 'GET');
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_exec($ch);
+        $status_code = curl_getinfo($ch,CURLINFO_HTTP_CODE);
+
+        if($status_code == 401)
+        {
+            return false;
+        }
+        return true;
+    }
 
     /**
      * @param string $endpoint part of the url that is unique for this request
@@ -50,19 +59,15 @@ class Api
             throw new LogicException("Expected " . join(", ", $allowedOptions) . ' as requestType');
         }
 
-        if(empty($this->api_user))
-        {
-            throw new LogicException("Username not set, please update configfile.");
-        }
-
         $url = $this->getUrl($endpoint);
+        Logger::log(User::getApiUser() . 'calls' . $url,Logger::VERBOSE);
 
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $requestType);
 
         $aHeaders = [];
-        $aHeaders[] = 'Authorization: Basic '. base64_encode($this->api_user . ':' . $this->api_pass);
+        $aHeaders[] = 'Authorization: Basic '. base64_encode(User::getApiUser() . ':' . User::getApiPass());
 
         if($requestType != 'GET')
         {
@@ -107,7 +112,8 @@ class Api
 
         if($status_code != self::HTTP_SUCCESS && $status_code != self::HTTP_CREATED)
         {
-            echo '||' . $output . '||';
+            Logger::log($url, Logger::WARNING);
+            Logger::log($output, Logger::WARNING);
             throw new HttpException("Something went wrong when posting data to $endpoint, got statuscode $status_code.", $status_code);
         }
         if(empty($output))
@@ -139,6 +145,8 @@ class Api
             echo $put_data_json . "<br><br>";
             echo "-------- <br><br>";
             echo $output;
+            Logger::log($endpoint, Logger::WARNING);
+            Logger::log($output, Logger::WARNING);
             throw new HttpException("API returned a $status_code.", $status_code);
         }
     }
@@ -157,6 +165,7 @@ class Api
 
         if($status_code !== self::HTTP_DELETED)
         {
+            Logger::log($endpoint, Logger::WARNING);
             throw new HttpException("API unexpected status code $status_code for DELETE to $endpoint.", $status_code);
         }
     }
@@ -177,6 +186,8 @@ class Api
 
         if($status_code !== self::HTTP_SUCCESS)
         {
+            Logger::log($endpoint, Logger::WARNING);
+            Logger::log($output, Logger::WARNING);
             throw new HttpException("API unexpected status code $status_code for GET to $endpoint.", $status_code);
         }
         return json_decode($output, true);

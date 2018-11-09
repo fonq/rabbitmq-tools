@@ -20,6 +20,31 @@ abbr.red { background: #dc3545; }
 abbr.red a { color:white!important; font-weight: normal!important;}
 a.red{color:#dc3545;}
 
+a.danger, button.danger{
+    color:white!important;
+    background: #dc3545;
+    font-weight: normal!important;
+    display: inline-block;
+    padding: 5px 5px;
+    margin: 0 0 3px 0;
+    border-radius: 5px;
+    border:1px solid black;
+    margin:0 5px 0 5px;
+}
+a.info, button.info{
+    color:white!important;
+    background: #2e6da4;
+    font-weight: normal!important;
+    display: inline-block;
+    padding: 5px 5px;
+    margin: 0 0 3px 0;
+    border-radius: 5px;
+    border:1px solid black;
+    margin:0 5px 0 5px;
+}
+.cl{clear:both;}
+.f-right{float:right;}
+
 .status-ok { }
 .status-error { color: #F00; }
 .status-timeout { color: #99EBFF; }
@@ -361,3 +386,16 @@ div.bindings-wrapper p.arrow { font-size: 200%; }
 }
 
 table.dynamic-shovels td label {width: 200px; margin-right:10px;padding: 4px 0px 5px 0px}
+
+#logout_button{
+    padding: 3px 7px;
+    display: inline;
+    background: #666;
+    color: #FFF !important;
+    border: 0;
+    border-radius: 5px;
+}
+
+thead tr td {
+    font-weight: bolder;
+}

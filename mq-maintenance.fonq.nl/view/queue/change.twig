@@ -2,6 +2,18 @@
     <h2>Change {{ queue.getName() }}</h2>
     <div class="hider" style="display:block;">
         <form method="post">
+            <a class="danger f-right" href="/?vhost={{ vhost|url_encode }}&queue={{ queue.getName()|url_encode }}&_do=ConfirmDelete">
+                Delete queue
+            </a>
+
+            <a class="info f-right" href="/message/generate?vhost_name={{ vhost|url_encode }}&queue_name={{ queue.getName()|url_encode }}">
+                Add test message(s)
+            </a>
+
+            <a class="info f-right" href="/message/overview?vhost_name={{ vhost|url_encode }}&queue_name={{ queue.getName()|url_encode }}">
+                Queue contents
+            </a>
+
             <input type="hidden" name="_do" value="ApplyChanges">
             <table class="form">
                 <tbody>
@@ -43,11 +55,20 @@
                             {% for binding in queue.getBindings() %}
                                 <tr>
                                     <td>{{ binding.getSource() ? binding.getSource() : '-' }}</td>
-                                    <td>{{ binding.getRoutingKey() }}</td>
                                     <td>
-                                        {{ binding.getDestination() }}
+
+                                        <a title="Generate some test messages for this routing key" href="/message/generate?vhost={{ binding.getVhost()|url_encode }}&routing_key={{ binding.getRoutingKey()|url_encode }}&exchange={{ binding.getSource()|url_encode }}">
+                                            {{ binding.getRoutingKey() }}
+
+                                        </a>
+                                    </td>
+                                    <td>
+                                        <a title="Have a look in the queue" href="/message/overview?vhost_name={{ binding.getVhost()|url_encode }}&queue_name={{ binding.getDestination()|url_encode }}">
+                                            {{ binding.getDestination() }}
+                                        </a>
+
                                         {% if binding.getSource() %}
-                                            <a href="/queue/change?vhost={{ binding.getVhost() }}&source={{ binding.getSource() }}&queue={{ binding.getDestination() }}&properties_key={{ binding.getPropertiesKey() }}&_do=SureDelete" title="Delete binding" class="red">[x]</a>
+                                            <a href="/queue/change?vhost={{ vhost|url_encode }}&source={{ binding.getSource()|url_encode }}&queue={{ binding.getDestination()|url_encode }}&properties_key={{ binding.getPropertiesKey()|url_encode }}&_do=SureDelete" title="Delete binding" class="red">[x]</a>
                                         {% endif %}
 
                                     </td>

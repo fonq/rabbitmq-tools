@@ -32,7 +32,10 @@
             {% for queue in queues %}
                 <tr class="alt{{ loop.index is odd? '1' : '2' }}">
                     <td>{{ queue.getVhost() }}</td>
-                    <td><a href="/message/generate?vhost={{ queue.getVhost() }}&queue_name={{ queue.getName() }}">{{ queue.getName() }}</a></td>
+                    <td>
+                        <a href="/message/overview?vhost_name={{ queue.getVhost()|url_encode }}&queue_name={{ queue.getName()|url_encode }}">
+                            {{ queue.getName() }}</a>
+                    </td>
                     <td class="c">
                         {% for argument_name, argument_value in queue.getArguments() %}
                             {% if argument_name == 'x-message-ttl' %}
@@ -61,7 +64,7 @@
                         {% endif %}
                         <abbr class="green" title="Change this queue safely">
                             <a href="/queue/change?vhost={{ queue.getVHost()|url_encode }}&queue={{ queue.getName()|url_encode }}">
-                                Change
+                                Queue settings
                             </a>
                         </abbr>
                         <abbr class="green" title="Move messages to another queue">
