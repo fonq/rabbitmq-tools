@@ -4,12 +4,9 @@
 
 * Install
   * [Node.js](http://nodejs.org): `brew install node` on OS X
-  * Install dependencies: `npm install` in application directory
+  * Install dependencies: `npm install` in application directory. On Ubunty systems it might be required to add a -g flag  `npm install -g` for the required permissions. `sudo npm install -g npm-check-updates` and `sudo npm install -g npm` also seemed needed but i ran these before adding the -g flag so i am not really sure if this is a hard requirement. 
 * Run
-  * `PORT=3000 AMQP_URI=amqp://localhost ./server.js`
-
-
-
+  * `PORT=3000 AMQP_URI=amqp://localhost ./server.js` - indien je een 403 error krijgt dan is het guest account waarschijnlijk disabled. Dan dien je in de URI de username, het wachtwoord en evt ook de poort te verpakken: amqp://user:pass@localhost:poort
 
 
 ## Development setup
