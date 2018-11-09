@@ -100,7 +100,7 @@ class Api
         curl_setopt($ch, CURLOPT_POST, 1);
         curl_setopt($ch, CURLOPT_POSTFIELDS, $post_data_json);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-        
+
         $aHeaders = [
             'Authorization: Basic '. base64_encode(User::getApiUser() . ':' . User::getApiPass()),
             'content-type: application/json'

@@ -91,13 +91,19 @@ class RabbitMq
                  * If truncate is present it will truncate the message payload if it is larger than the size given (in bytes).
                  */
                 return [
+                    "requeue" => false,
                     "count" => $this->limit,
                     "ackmode" => $this->ack_requeue, // we are offering the messages manually
                     "encoding" => "auto",
                     "truncate" => 5000
                 ];
             }
+
+            public static function __callStatic($name, $arguments)
+            {
+                // TODO: Implement __callStatic() method.
         });
+
         $model->setAckRequeue($ack_requeue);
         $model->setLimit($limit);
 
