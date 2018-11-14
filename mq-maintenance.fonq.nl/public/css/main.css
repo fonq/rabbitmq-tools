@@ -26,7 +26,6 @@ a.danger, button.danger{
     font-weight: normal!important;
     display: inline-block;
     padding: 5px 5px;
-    margin: 0 0 3px 0;
     border-radius: 5px;
     border:1px solid black;
     margin:0 5px 0 5px;
@@ -37,11 +36,17 @@ a.info, button.info{
     font-weight: normal!important;
     display: inline-block;
     padding: 5px 5px;
-    margin: 0 0 3px 0;
     border-radius: 5px;
     border:1px solid black;
     margin:0 5px 0 5px;
 }
+
+a.info:hover, a.danger:hover
+{
+    background: #F60;
+}
+
+
 .cl{clear:both;}
 .f-right{float:right;}
 

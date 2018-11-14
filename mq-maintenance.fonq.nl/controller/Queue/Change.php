@@ -10,6 +10,7 @@ use Classes\StatusMessage;
 use Classes\StatusMessageButton;
 use Classes\Template;
 use Model\BindingModel;
+use Model\QueueModel;
 
 class Change extends AbstractController
 {
@@ -55,12 +56,33 @@ class Change extends AbstractController
 
         // 4. Re create the original queue with new settings
         $arguments = [];
+
+        $knownArguments = QueueModel::getKnownArguments();
         foreach ($_POST as $key => $value)
         {
+            if(empty($value))
+            {
+                continue;
+            }
             if(preg_match('/arguments_([0-9]+)_mfkey/', $key, $matches))
             {
                 $id = $matches[1];
-                $arguments[$value] = (int)$_POST["arguments_{$id}_mfvalue"];
+                if(isset($knownArguments[$value]) && $knownArguments[$value] == 'int')
+                {
+                    $arguments[$value] = (int)$_POST["arguments_{$id}_mfvalue"];
+                }
+                else if(isset($knownArguments[$value]) && $knownArguments[$value] == 'string')
+                {
+                    $arguments[$value] = $_POST["arguments_{$id}_mfvalue"];
+                }
+                else if(!isset($knownArguments[$value]))
+                {
+                    throw new \LogicException("Unknown argument $value is this really a supported value by RabbitMq?");
+                }
+                else
+                {
+                    throw new \LogicException("Unknown datatype {$knownArguments[$value]}, we don't know what to do with this.");
+                }
             }
         }
 

@@ -98,10 +98,6 @@ class RabbitMq
                     "truncate" => 5000
                 ];
             }
-
-            public static function __callStatic($name, $arguments)
-            {
-                // TODO: Implement __callStatic() method.
         });
 
         $model->setAckRequeue($ack_requeue);
@@ -261,7 +257,7 @@ class RabbitMq
      * @return bool
      * @throws Exception\HttpException
      */
-    function requeueMessage($vhost_name, $from_queue, $to_queue, $message_position):bool
+    function requeueMessage($vhost_name, $from_queue, $to_queue, $message_position, $payload):bool
     {
         $connection = new AMQPStreamConnection(getConfig()['api_hostname'], getConfig()['amqp_port'], User::getApiUser(), User::getApiPass(), $vhost_name);
         $channel = $connection->channel();
@@ -289,7 +285,7 @@ class RabbitMq
                 $message->setExchange($exchange);
                 $message->setVhost($vhost_name);
                 $message->setRoutingKey($routing_key);
-                $message->setPayload($original_message->getBody());
+                $message->setPayload($payload);
 
                 $this->publishMessage($vhost_name, '', $message);
 

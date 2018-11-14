@@ -66,15 +66,16 @@ class Overview extends AbstractController
     }
     function doRequeue()
     {
-        $vhost_name = $_GET['vhost_name'];
-        $queue_name = $_GET['queue_name'];
-        $delivery_tag = $_GET['delivery_tag'];
-        $to_queue = $_GET['original_queue'];
-        $limit = $_GET['limit'];
+        $vhost_name = $_POST['vhost_name'];
+        $queue_name = $_POST['queue_name'];
+        $delivery_tag = $_POST['delivery_tag'];
+        $to_queue = $_POST['original_queue'];
+        $limit = $_POST['limit'];
+        $payload = $_POST['payload'];
 
         try
         {
-            RabbitMq::instance()->requeueMessage($vhost_name, $queue_name, $to_queue, $delivery_tag);
+            RabbitMq::instance()->requeueMessage($vhost_name, $queue_name, $to_queue, $delivery_tag, $payload);
             $this->addStatusMessage(new StatusMessage("Message requeued"));
         }
         catch (HttpException $e)

@@ -2,6 +2,7 @@
 namespace Model;
 
 use Classes\Exception\HttpException;
+use Classes\Logger;
 use Classes\RabbitMq;
 
 class QueueModel extends BaseModel
@@ -229,9 +230,10 @@ class QueueModel extends BaseModel
     {
         return RabbitMq::instance()->getBindings($this);
     }
-    function toApi(): array
+
+    static function getKnownArguments():array
     {
-        $aKnownArguments = [
+        return [
             'x-message-ttl' => 'int',
             'x-expires' => 'int',
             'x-max-length' => 'int',
@@ -242,6 +244,13 @@ class QueueModel extends BaseModel
             'x-queue-master-locator' => 'string',
             'x-max-priority' => 'int'
         ];
+    }
+
+    function toApi(): array
+    {
+        Logger::log(__METHOD__ . " available arguments " . json_encode($this->arguments), Logger::VERBOSE);
+
+        $aKnownArguments = self::getKnownArguments();
 
         $arguments = [];
         if(!empty($this->arguments))

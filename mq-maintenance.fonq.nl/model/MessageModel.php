@@ -99,7 +99,12 @@ class MessageModel extends BaseModel
     }
     function getPrettyfiedPayload()
     {
-        return Utils::prettifyJson($this->payload);
+        if (is_object(json_decode($this->payload)))
+        {
+            return Utils::prettifyJson($this->payload);
+        }
+        return $this->payload;
+
     }
 
     function setPayloadEncoding($payload_encoding)

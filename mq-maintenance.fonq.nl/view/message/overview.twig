@@ -65,14 +65,21 @@
                         </tr>
                     </thead>
                     {% for message in messages %}
+                        <form method="post" action="/message/overview">
+                            <input type="hidden" name="vhost_name" value="{{ vhost_name }}">
+                            <input type="hidden" name="queue_name" value="{{ queue_name }}">
+                            <input type="hidden" name="limit" value="{{ limit }}">
+                            <input type="hidden" name="delivery_tag" value="{{ loop.index }}">
+                            <input type="hidden" name="_do" value="Requeue">
+                            <input type="hidden" name="original_queue" value="{{ message.getProperties().headers['x-first-death-queue']|url_encode }}">
+                            <input type="hidden" name="exchange" value="{{ message.getProperties().headers['x-first-death-exchange']|url_encode}}">
+
                         <tr>
                             <td style="vertical-align: top">
                                 {{ message.getRoutingKey() }}
                             </td>
                             <td>
-                                <div style="width:900px;height:250px;overflow: scroll;border:1px solid black">
-                                    <pre>{{ message.getPrettyfiedPayload() }}</pre>
-                                </div>
+                                <textarea name="payload" style="width:900px;height:250px;overflow: scroll;border:1px solid black">{{ message.getPrettyfiedPayload() }}</textarea>
                             </td>
                             <td style="vertical-align: top">
                                 <div style="margin-bottom: 20px;">
@@ -85,9 +92,9 @@
                                             Queue contents
                                         </a>
 
-                                        <a class="info" href="{{ message.getRequeueUrl() }}/message/overview?vhost_name={{ vhost_name|url_encode }}&queue_name={{ queue_name|url_encode }}&limit={{ limit }}&delivery_tag={{ loop.index }}&_do=Requeue&original_queue={{ message.getProperties().headers['x-first-death-queue']|url_encode }}&exchange={{ message.getProperties().headers['x-first-death-exchange']|url_encode}}">
+                                        <button type="submit" class="info">
                                             Requeue
-                                        </a>
+                                        </button>
                                     {% endif %}
                                     <a class="danger" href="/message/overview?vhost_name={{ vhost_name|url_encode }}&queue_name={{ queue_name|url_encode }}&limit={{ limit }}&_do=DeleteMessage&delivery_tag={{ loop.index }}">
                                         Delete
@@ -128,6 +135,7 @@
                                 </table>
                             </td>
                         </tr>
+                        </form>
                     {% endfor %}
                 </tbody>
             </table>
