@@ -71,9 +71,8 @@
                             <input type="hidden" name="limit" value="{{ limit }}">
                             <input type="hidden" name="delivery_tag" value="{{ loop.index }}">
                             <input type="hidden" name="_do" value="Requeue">
-                            <input type="hidden" name="original_queue" value="{{ message.getProperties().headers['x-first-death-queue']|url_encode }}">
-                            <input type="hidden" name="exchange" value="{{ message.getProperties().headers['x-first-death-exchange']|url_encode}}">
-
+                            <input type="hidden" name="original_queue" value="{{ message.getProperties()['headers']['x-death'][0]['queue'] }}">
+                            <input type="hidden" name="exchange" value="{{ message.getProperties().headers['x-first-death-exchange'] }}">
                         <tr>
                             <td style="vertical-align: top">
                                 {{ message.getRoutingKey() }}
@@ -84,11 +83,11 @@
                             <td style="vertical-align: top">
                                 <div style="margin-bottom: 20px;">
                                     {% if message.getProperties().headers['x-death'] is iterable %}
-                                        <a class="info" href="/queue/change?vhost={{ vhost_name|url_encode }}&queue={{ message.getProperties().headers['x-first-death-queue'] }}">
+                                        <a class="info" href="/queue/change?vhost={{ vhost_name|url_encode }}&queue={{ message.getProperties()['headers']['x-death'][0]['queue'] }}">
                                             Queue settings
                                         </a>
 
-                                        <a class="info" href="/message/overview?vhost_name={{ vhost_name|url_encode }}&queue_name={{ message.getProperties().headers['x-first-death-queue'] }}  ">
+                                        <a class="info" href="/message/overview?vhost_name={{ vhost_name|url_encode }}&queue_name={{ message.getProperties()['headers']['x-death'][0]['queue']|url_encode }}  ">
                                             Queue contents
                                         </a>
 
@@ -108,20 +107,21 @@
                                         <tr>
                                             <td>Original queue</td>
                                             <td>
-                                                <a href="/message/overview?vhost_name={{ vhost_name|url_encode }}&queue_name={{ message.getProperties().headers['x-first-death-queue']|url_encode }}">
-                                                    {{ message.getProperties().headers['x-first-death-queue'] }}
+                                                <a href="/message/overview?vhost_name={{ vhost_name|url_encode }}&queue_name={{ message.getProperties()['headers']['x-death'][0]['queue']|url_encode }}">
+                                                    {{ message.getProperties()['headers']['x-death'][0]['queue'] }}
                                                 </a>
                                             </td>
                                         </tr>
                                         <tr>
                                             <td>Reason</td>
-                                            <td>{{ message.getProperties().headers['x-first-death-reason'] }}</td>
+                                            <td>{{ message.getProperties()['headers']['x-death'][0]['reason'] }}</td>
                                         </tr>
                                         <tr>
                                             <td>Orignal exchange</td>
-                                            <td>{{ message.getProperties().headers['x-first-death-exchange'] ? message.getProperties().headers['x-first-death-exchange'] : 'Direct' }}</td>
+                                            <td>
+                                                {{ message.getProperties()['headers']['x-death'][0]['exchange'] ? message.getProperties()['headers']['x-death'][0]['exchange'] : 'Direct' }}
+                                            </td>
                                         </tr>
-
                                     {% endif %}
                                     <tr>
                                         <td>Delivery mode</td>
@@ -129,7 +129,7 @@
                                     </tr>
                                     <tr>
                                         <td>Routing key</td>
-                                        <td>{{ message.getRoutingKey() }}</td>
+                                        <td>{{ message.getProperties()['headers']['x-death'][0]['routing-keys'][0] }}</td>
                                     </tr>
 
                                 </table>
