@@ -67,7 +67,7 @@ class RabbitMq
             private $ack_requeue;
             private $limit = 50;
 
-            function setAckRequeue(bool $ack_requeue)
+            function setAckRequeue($ack_requeue)
             {
                 $this->ack_requeue = $ack_requeue;
             }
@@ -91,9 +91,10 @@ class RabbitMq
                  * If truncate is present it will truncate the message payload if it is larger than the size given (in bytes).
                  */
                 return [
-                    "requeue" => $this->ack_requeue,
-                    "count" => $this->limit,
+                    // requeue < 3.6.12, ackmode >= 3.7
+                    "requeue" => $this->ack_requeue == 'ack_requeue_true' ? true : false,
                     "ackmode" => $this->ack_requeue, // we are offering the messages manually
+                    "count" => $this->limit,
                     "encoding" => "auto",
                     "truncate" => 5000
                 ];

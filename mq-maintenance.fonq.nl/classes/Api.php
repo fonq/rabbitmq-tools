@@ -89,14 +89,14 @@ class Api
         $endpoint = $this->validateEndpoint($endpoint);
 
         $ch = curl_init();
+        $url = $this->getUrl($endpoint);
+        Logger::log(User::getApiUser() . ' calls ' . $url, Logger::VERBOSE);
 
         $post_data = $model->toApi();
         $post_data_json = json_encode($post_data);
         $post_data_json = str_replace('\/', '/', $post_data_json);
 
         Logger::log('Payload POST: ' . $post_data_json, Logger::VERBOSE);
-
-        $url = $this->getUrl($endpoint);
 
         curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_POST, 1);
