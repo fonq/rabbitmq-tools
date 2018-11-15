@@ -148,9 +148,11 @@ class Change extends AbstractController
     {
         DeferredAction::register('after_add_test_messages', $_SERVER['REQUEST_URI']);
         $RabbitMq = RabbitMq::instance();
+
         try
         {
             $viewData = [
+                'known_arguments' => QueueModel::getKnownArguments(),
                 'vhost' => $this->vhost_name,
                 'vhosts' => $RabbitMq->getVHosts(),
                 'queue' => $RabbitMq->getQueue($this->vhost_name, $this->queue_name)

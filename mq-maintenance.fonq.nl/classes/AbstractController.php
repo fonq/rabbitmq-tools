@@ -10,6 +10,21 @@ abstract class AbstractController
     abstract function getTitle():string;
     abstract function getContent():string;
 
+    function getApiVersion():string
+    {
+        if(RabbitMq::isLoggedIn())
+        {
+            try{
+                return RabbitMq::instance()->getApiVersion();
+            }
+            catch (\Exception $e)
+            {
+                Logger::log("Could not fetch api version", Logger::WARNING);
+                return 'unknown';
+            }
+        }
+        return 'log logged in';
+    }
     function addStatusMessage(StatusMessage $statusMessage)
     {
         $_SESSION['status_message'] = serialize($statusMessage);

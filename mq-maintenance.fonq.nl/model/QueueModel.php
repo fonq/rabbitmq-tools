@@ -233,17 +233,38 @@ class QueueModel extends BaseModel
 
     static function getKnownArguments():array
     {
-        return [
-            'x-message-ttl' => 'int',
-            'x-expires' => 'int',
-            'x-max-length' => 'int',
-            'x-max-length-bytes' => 'int',
-            'x-overflow' => 'string',
-            'x-dead-letter-exchange' => 'string',
-            'x-dead-letter-routing-key' => 'string',
-            'x-queue-master-locator' => 'string',
+        $out = [
+            'x-message-ttl' => ['datatype' => 'int', 'label' => 'Message TTL'],
+            'x-expires'  => ['datatype' => 'int', 'label' => 'Auto expire'],
+            'x-max-length' => ['datatype' => 'int', 'label' => 'Max length'],
+            'x-max-length-bytes' => ['datatype' => 'int', 'label' => 'Max length bytes'],
+            'x-overflow' => ['datatype' => 'string', 'label' => 'Overflow behaviour'],
+            'x-dead-letter-exchange' => ['datatype' => 'string', 'label' => 'Dead letter exchange'],
+            'x-dead-letter-routing-key' => ['datatype' => 'string', 'label' => 'Dead letter routing key'],
+            'x-queue-master-locator' => ['datatype' => 'string', 'label' => 'Master locator'],
             'x-max-priority' => 'int'
         ];
+        try{
+            $api_version_uniform = RabbitMq::instance()->getApiVersion('api_version_uniform');
+        }
+        catch (\Exception $e)
+        {
+            // Just continue, exception is catched and logged elsewhere already.
+        }
+
+        if($api_version_uniform > 35000)
+        {
+            $out['x-max-priority'] = ['datatype' => 'string', 'label' => 'Maximum priority'];
+        }
+
+        // Since RabbitMQ 3.6.0, the broker has the concept of Lazy Queues
+        if($api_version_uniform > 36000)
+        {
+            $out['x-queue-mode'] = ['datatype' => 'string', 'label' => 'Lazy mode'];
+        }
+
+        return $out;
+
     }
 
     function toApi(): array
@@ -266,7 +287,7 @@ class QueueModel extends BaseModel
                     throw new \LogicException("The specified argument $key is not known by the system.");
                 }
 
-                if($aKnownArguments[$key] == 'int')
+                if($aKnownArguments[$key]['datatype'] == 'int')
                 {
                     $arguments[$key] = (int) $value;
                 }

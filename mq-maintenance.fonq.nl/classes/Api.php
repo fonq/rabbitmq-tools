@@ -184,10 +184,11 @@ class Api
 
     /**
      * @param $endpoint
+     * @param $extra_arguments
      * @return mixed
      * @throws HttpException
      */
-    function get($endpoint)
+    function get($endpoint, $extra_arguments = null)
     {
         $endpoint = $this->validateEndpoint($endpoint);
 
@@ -197,7 +198,12 @@ class Api
         $status_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 
         Logger::log('Statuscode GET: ' . $status_code, Logger::VERBOSE);
-        Logger::log('Output GET: ' . $output, Logger::VERBOSE);
+
+        if(!isset($extra_arguments['no_log_output']))
+        {
+            Logger::log('Output GET: ' . $output, Logger::VERBOSE);
+        }
+
 
         if ($status_code !== self::HTTP_SUCCESS) {
             Logger::log($endpoint, Logger::WARNING);

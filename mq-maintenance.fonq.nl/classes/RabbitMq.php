@@ -109,10 +109,28 @@ class RabbitMq
         {
             return new MessageList([]);
         }
-
         return new MessageList($messages);
     }
 
+    /**
+     * @param string $key specify what we should we return from the api call /api/overview
+     * @return string|int
+     * @throws Exception\HttpException
+     */
+    function getApiVersion($key = 'management_version')
+    {
+        $endpoint = '/overview';
+        // Logging the output would be to verbose
+        $data = self::api()->get($endpoint, ['no_log_output' => true]);
+
+        if ($key == 'api_version_uniform')
+        {
+            $api_version_no_dots = str_replace('.', '', $data['management_version']);
+            $api_version_uniform =  (int) str_pad($api_version_no_dots, 5, '0', STR_PAD_RIGHT);
+            return $api_version_uniform;
+        }
+        return $data[$key];
+    }
     /**
      * @param $vhost
      * @param $queue
@@ -255,6 +273,7 @@ class RabbitMq
      * @param $from_queue
      * @param $to_queue
      * @param $message_position
+     * @param $payload
      * @return bool
      * @throws Exception\HttpException
      */

@@ -40,9 +40,6 @@ try
         User::login();
     }
 
-
-
-
     $url_parts = explode('/', $base_request_uri);
     unset($url_parts[0]);
 
@@ -87,6 +84,7 @@ try
 {
     $parseData = [
         'title' => $controller->getTitle(),
+        'api_version' => $controller->getApiVersion(),
         'content' => $controller->getContent(),
         'selected_menu_item' => $controller->getSelectedMenuItem(),
         'status_message' => $controller->getStatusMessage()

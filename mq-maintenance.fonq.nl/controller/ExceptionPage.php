@@ -21,8 +21,6 @@ class ExceptionPage extends AbstractController
             'exception' => $this->exception
         ];
         return Template::parse('exception_page.twig', $view_data);
-
-        // TODO: Implement getContent() method.
     }
     function getTitle(): string
     {
