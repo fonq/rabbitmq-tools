@@ -66,7 +66,7 @@ class Move extends AbstractController
             'to_queue' => $to_queue,
             'to_vhost' => $to_vhost,
             'queue' => $queue,
-            'messages' => $queue->getMessageList('ack_requeue_true'),
+            'messages' => $queue->getMessageList('ack_requeue_true', 100000),
             'all_vhosts' => $all_vhosts,
             'all_vhost_queues' => $all_vhost_queues
         ];

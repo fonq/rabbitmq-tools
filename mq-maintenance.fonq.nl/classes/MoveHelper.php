@@ -50,9 +50,15 @@ class MoveHelper
         return $messages;
     }
 
+    /**
+     * @param $from_vhost
+     * @param $from_queue
+     * @return MessageList
+     * @throws Exception\HttpException
+     */
     private static function getMessages($from_vhost, $from_queue)
     {
-        $messages = RabbitMq::instance()->getMessages('ack_requeue_false', $from_vhost, $from_queue);
+        $messages = RabbitMq::instance()->getMessages('ack_requeue_false', $from_vhost, $from_queue, 10000);
         return $messages;
     }
 
