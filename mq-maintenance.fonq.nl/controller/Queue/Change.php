@@ -9,7 +9,6 @@ use Classes\RabbitMq;
 use Classes\StatusMessage;
 use Classes\StatusMessageButton;
 use Classes\Template;
-use Model\BindingModel;
 use Model\QueueModel;
 
 class Change extends AbstractController
@@ -67,11 +66,11 @@ class Change extends AbstractController
             if(preg_match('/arguments_([0-9]+)_mfkey/', $key, $matches))
             {
                 $id = $matches[1];
-                if(isset($knownArguments[$value]) && $knownArguments[$value] == 'int')
+                if(isset($knownArguments[$value]) && $knownArguments[$value]['datatype'] == 'int')
                 {
                     $arguments[$value] = (int)$_POST["arguments_{$id}_mfvalue"];
                 }
-                else if(isset($knownArguments[$value]) && $knownArguments[$value] == 'string')
+                else if(isset($knownArguments[$value]) && $knownArguments[$value]['datatype'] == 'string')
                 {
                     $arguments[$value] = $_POST["arguments_{$id}_mfvalue"];
                 }
@@ -81,7 +80,7 @@ class Change extends AbstractController
                 }
                 else
                 {
-                    throw new \LogicException("Unknown datatype {$knownArguments[$value]}, we don't know what to do with this.");
+                    throw new \LogicException("Unknown datatype for field $value, {$knownArguments[$value]['label']}, we don't know what to do with this.");
                 }
             }
         }
