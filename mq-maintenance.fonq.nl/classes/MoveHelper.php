@@ -62,6 +62,13 @@ class MoveHelper
         return $messages;
     }
 
+    /**
+     * @param $to_vhost
+     * @param $to_exchange
+     * @param $to_queue
+     * @param $messages
+     * @throws Exception\HttpException
+     */
     public static function requeueMessages($to_vhost, $to_exchange, $to_queue, $messages)
     {
         foreach ($messages as $message)
@@ -85,6 +92,14 @@ class MoveHelper
         }
     }
 
+    /**
+     * @param $from_queue
+     * @param $vhost_name
+     * @param $exchange_name
+     * @param $to_queue
+     * @param MessageList $messages
+     * @throws Exception\HttpException
+     */
     public static function createBindings($from_queue, $vhost_name, $exchange_name, $to_queue, MessageList $messages)
     {
         $bindings_to_be_added = [];
@@ -120,8 +135,13 @@ class MoveHelper
             $binding->setRoutingKey($routing_key);
             RabbitMq::instance()->addBinding($binding);
         }
-
     }
+
+    /**
+     * @param $vhost
+     * @return string
+     * @throws Exception\HttpException
+     */
     public static function createExchange($vhost)
     {
         $tmpExchangeName = time() . 'temporaryexchange';

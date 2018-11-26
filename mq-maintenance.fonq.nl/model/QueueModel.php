@@ -54,8 +54,7 @@ class QueueModel extends BaseModel
         $this->auto_delete = $queue['auto_delete'];
 
         $this->durable = $queue['durable'];
-        $this->exclusive = $queue['exclusive'];
-
+        $this->exclusive = $queue['exclusive'] ?? null;
 
         if(isset($queue['messages_unacknowledged_ram']))
         {
