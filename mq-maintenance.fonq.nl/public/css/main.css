@@ -2,7 +2,7 @@ body { font: 12px Verdana, sans-serif; color: #484848; padding: 0; margin: 0; }
 input, button, a.button { font: 12px Verdana, sans-serif; }
 
 a { font-weight: bold; color: #444; text-decoration: none; }
-a:hover { color: #F60; }
+a:hover { color: #30b4e7; }
 
 #outer { padding: 0 0 1em 0; width: 95%; margin: auto; }
 
@@ -20,7 +20,7 @@ abbr.red { background: #dc3545; }
 abbr.red a { color:white!important; font-weight: normal!important;}
 a.red{color:#dc3545;}
 
-a.danger, button.danger{
+a.danger, button.danger, div.danger{
     color:white!important;
     background: #dc3545;
     font-weight: normal!important;
@@ -29,6 +29,14 @@ a.danger, button.danger{
     border-radius: 5px;
     border:1px solid black;
     margin:0 5px 0 5px;
+}
+div.danger
+{
+    position: fixed;
+    top:5px;
+    text-align: center;
+    width:200px;
+    margin-left: calc(50% - 100px);
 }
 a.info, button.info{
     color:white!important;
@@ -43,7 +51,7 @@ a.info, button.info{
 
 a.info:hover, a.danger:hover
 {
-    background: #F60;
+    background: #30b4e7;
 }
 
 
@@ -55,7 +63,7 @@ a.info:hover, a.danger:hover
 .status-timeout { color: #99EBFF; }
 
 #debug { position: fixed; bottom: 0; z-index: 9; width: 100%; text-align: center; padding: 0; margin: 0; }
-#debug p { background: #F60; color: white; margin: 0; padding: 1em; font-size: 2em; }
+#debug p { background: #30b4e7; color: white; margin: 0; padding: 1em; font-size: 2em; }
 
 #header { background: white; position: fixed; z-index: 1; width: 95%; margin: auto; padding: 1em 0 0 0; border-bottom: 1px solid #666; }
 
@@ -67,17 +75,17 @@ a.info:hover, a.danger:hover
 #menu ul { padding: 0; margin: 0; overflow: auto; }
 #menu li { float: left; list-style-type: none; padding: 0 0.1em 0 0; }
 #menu li a { display: block; padding: 0.7em 1.3em; margin-right: 5px; }
-#menu a:hover { background-color: #F60; color: white; -moz-border-radius: 8px 8px 0 0; border-radius: 8px 8px 0 0; }
+#menu a:hover { background-color: #30b4e7; color: white; -moz-border-radius: 8px 8px 0 0; border-radius: 8px 8px 0 0; }
 #menu a.selected { background-color: #666; color: white; -moz-border-radius: 8px 8px 0 0; border-radius: 8px 8px 0 0; }
 #vhost-form { float: right; padding: 0; margin: 0; }
 
-#main { padding-top: 10em; }
+#main { padding-top: 15em; }
 #main.with-rhs { margin-right: 210px; }
 #rhs { float: right; width: 200px; background-color: white; position: relative; padding-top: 10em; }
 #rhs ul { padding: 0; margin: 10px 0 0 0; }
 #rhs li { list-style-type: none; padding: 0; margin-bottom: 5px; }
 #rhs a { display: block; padding: 0.7em; font-weight: bold; text-decoration: none; }
-#rhs a:hover { background-color: #F60; color: white; -moz-border-radius: 8px 0 0 8px; border-radius: 8px 0 0 8px; }
+#rhs a:hover { background-color: #30b4e7; color: white; -moz-border-radius: 8px 0 0 8px; border-radius: 8px 0 0 8px; }
 #rhs a.selected { background-color: #666; color: white; -moz-border-radius: 8px 0 0 8px; border-radius: 8px 0 0 8px; }
 
 h1 { font-size: 2em; font-weight: normal; padding: 0; margin-bottom: 0; }
@@ -98,7 +106,7 @@ table th .help,
 table th .popup-options-link { border: none; }
 .help:hover,
 .popup-options-link:hover,
-.popup-owner { background-color: #F60; color: white; }
+.popup-owner { background-color: #30b4e7; color: white; }
 
 .rate-visibility-option { cursor: pointer; padding: 4px; background: #fafafa; border: 1px solid #f0f0f0; border-radius: 3px; display:block; }
 .rate-visibility-option:hover { background: #ddf;
@@ -114,7 +122,7 @@ table.legend th { padding: 4px 10px 4px 0; width: 80px; }
 table.legend td { padding: 4px 0 4px 10px; width: 130px; }
 
 .tag-link, .argument-link { color: #444; cursor: pointer; font-weight: bold; }
-.tag-link:hover, .argument-link:hover { color: #F60; }
+.tag-link:hover, .argument-link:hover { color: #30b4e7; }
 
 .filter { overflow: auto; width: 100%; margin-bottom: 10px; }
 .filter table { float: left; }
@@ -137,9 +145,9 @@ table.list th, table.list td { border: 1px solid #ccc; }
 table.list th { text-align: left; }
 table.list th.plus-minus { border: none; min-width: 2em; }
 table.list td a { display: block; color: black; text-decoration: none; font-weight: bold; }
-table.list td a:hover { color: #F60; }
+table.list td a:hover { color: #30b4e7; }
 table.list th a.sort { display: block; width: 100%; cursor: pointer; color: black; font-weight: bold; }
-table.list th a.sort .arrow { color: #F60; }
+table.list th a.sort .arrow { color: #30b4e7; }
 table.list td p { margin: 0; padding: 1px 0 0 0; }
 table.list td p.warning { margin: 0; padding: 5px; }
 
@@ -280,7 +288,7 @@ div.form-popup-warn span:hover,
 div.form-popup-info span:hover,
 div.form-popup-help span:hover,
 div.form-popup-options span:hover {
-  background-color: #F60;
+  background-color: #30b4e7;
   cursor: pointer;
 }
 
@@ -349,7 +357,7 @@ input[type=submit], button, a.button {
     border: 0;
 }
 input[type=submit]:hover, button:hover, a.button:hover {
-    background: #F60;
+    background: #30b4e7;
     text-decoration: none !important;
 }
 

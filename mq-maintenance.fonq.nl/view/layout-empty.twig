@@ -1,0 +1,42 @@
+<html>
+<head>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+    <title>{{ title }}</title>
+
+    <script src="/js/ejs-1.0.min.js" type="text/javascript"></script>
+    <script src="/js/jquery-1.12.4.min.js" type="text/javascript"></script>
+    <script src="/js/global.js" type="text/javascript"></script>
+    <script src="/js/main.js" type="text/javascript"></script>
+    <link href="/css/main.css" rel="stylesheet" type="text/css">
+    <link href="/img/favicon.png" rel="shortcut icon" type="image/x-icon">
+
+    <!--[if lte IE 8]>
+    <![endif]-->
+
+</head>
+<body>
+    <div id="outer">
+        {{ status_message|raw }}
+        <div id="header">
+
+
+            <div id="logo">
+                <a href="/">
+                    <img src="/img/mail.png" alt="RabbitMQ logo" height="77">
+                </a>
+            </div>
+
+
+        </div>
+        <div id="rhs"></div>
+        <div id="main">
+            {{ content|raw }}
+        </div>
+        <div id="footer">
+        </div>
+    </div>
+    <div id="debug"></div>
+    <div id="scratch"></div>
+</body>
+</html>

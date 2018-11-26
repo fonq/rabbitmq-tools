@@ -9,17 +9,22 @@
     <script src="/js/global.js" type="text/javascript"></script>
     <script src="/js/main.js" type="text/javascript"></script>
     <link href="/css/main.css" rel="stylesheet" type="text/css">
-    <link href="/favicon.ico" rel="shortcut icon" type="image/x-icon">
+    <link href="/img/favicon.png" rel="shortcut icon" type="image/x-icon">
 
     <!--[if lte IE 8]>
     <![endif]-->
 
 </head>
 <body>
+
     <div id="outer">
         {{ status_message|raw }}
         <div id="header">
-
+            {% if env == 'production' %}
+                <div style="padding:5px;" class="danger">
+                    !!! Production environment !!!
+                </div>
+            {% endif %}
             <div id="login-version" style="float: right">
                 <span>API version: {{ api_version }}</span>
                 <a id="logout_button" href="/logout">Logout</a>
@@ -27,7 +32,7 @@
             </div>
             <div id="logo">
                 <a href="/">
-                    <img src="/img/rabbitmqlogo.png" alt="RabbitMQ logo" width="204" height="37">
+                    <img src="/img/mail.png" alt="RabbitMQ logo" height="57">
                 </a>
             </div>
             <div id="menu">

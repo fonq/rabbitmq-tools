@@ -80,31 +80,25 @@ try
     {
         throw new Exception("Controller class must implement AbstractController.");
     }
-}
-catch (Exception $exception)
-{
-    $controller  = new \Controller\ExceptionPage();
-    $controller->setException($exception);
-}
 
-if(isset($_REQUEST['_do']) && !empty($_REQUEST['_do']))
-{
-    /**
-     * Process input.
-     */
-    $method = 'do'.$_REQUEST['_do'];
-    $controller->$method();
-}
+    if(isset($_REQUEST['_do']) && !empty($_REQUEST['_do']))
+    {
+        /**
+         * Process input.
+         */
+        $method = 'do'.$_REQUEST['_do'];
+        $controller->$method();
+    }
 
-try
-{
     $parseData = [
+        'env' => getConfig()['env'],
         'title' => $controller->getTitle(),
         'api_version' => $controller instanceof \Controller\ExceptionPage ? null : $controller->getApiVersion(),
         'content' => $controller->getContent(),
         'selected_menu_item' => $controller->getSelectedMenuItem(),
         'status_message' => $controller->getStatusMessage()
     ];
+    echo Template::parse('layout.twig', $parseData);
 }
 catch (Exception $exception)
 {
@@ -117,5 +111,8 @@ catch (Exception $exception)
         'selected_menu_item' => $controller->getSelectedMenuItem(),
         'status_message' => $controller->getStatusMessage()
     ];
+    echo Template::parse('layout-empty.twig', $parseData);
 }
-echo Template::parse('layout.twig', $parseData);
+
+
+

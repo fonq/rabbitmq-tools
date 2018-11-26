@@ -2,6 +2,7 @@
 function getConfig()
 {
     return [
+        'env' => 'dev', // Shows a warning on top of the screen when set to live. [live|test|dev]
         'api_hostname' => 'localhost',
         'api_port' => '15672',
         'amqp_port' => '5672',
