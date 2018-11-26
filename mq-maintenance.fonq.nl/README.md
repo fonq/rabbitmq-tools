@@ -25,7 +25,7 @@ A webinterface for RabbitMQ that provides some functionality that is not availab
 It is always a good idea to start by making a backup. Instructions can be found on the bottom of this page. 
 
 #### Requeue dead lettered
-After signing in click on queues and under the column name look for **failed.dead**. You should the contents of the dead letter queue with a button to requeue a single message and a general requeue button. It is possible to modify messages befor you requeue.
+After signing in click on queues and under the column name look for **failed.dead**. You should the contents of the dead letter queue with a button to requeue a single message and a general requeue button. It is possible to modify messages before you requeue.
 
 #### View routing key topology map
 The routing key topology map shows what queue's listen to which routing keys. This way it is easy for you to see who is receving what.  
