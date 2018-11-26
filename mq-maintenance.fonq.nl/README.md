@@ -28,7 +28,7 @@ It is always a good idea to start by making a backup. Instructions can be found 
 After signing in click on queues and under the column name look for **failed.dead**. You should the contents of the dead letter queue with a button to requeue a single message and a general requeue button. It is possible to modify messages before you requeue.
 
 #### View routing key topology map
-The routing key topology map shows what queue's listen to which routing keys. This way it is easy for you to figure out who is receving what message.  
+The routing key topology map shows what queue's listen to which routing keys. This way it is easy for you to figure out who is receiving what message.  
 
 #### Generate (lots of) test messages.
 Test messages can be send to the topic exchange, this is the way messages usually arrive in RabbitMQ at Fonq. When you do this the message is routed / copied to all the queue's that listen to the routing key that you provice (see the section topology map). You can also send messages to a queue using the direct exchange. Sending messages this way ensures that they are delivered only to the queue that you intended the message to arrive on. 
