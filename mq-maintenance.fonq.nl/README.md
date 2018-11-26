@@ -40,7 +40,7 @@ If you want to send messages to the exchange using the topic method, choose "amq
 If you want to send messages to the direct exchange e.g. have your messages delivered to a single queue, choose amq.direct or leave the exchange field empty (direct = default). In the routing key field enter the name of the queue, enter some payload and select the amount of test messages that you want to send. And ofcourse press publish to actually send them.
 
 #### Modify queues while running
-Be very carefull here, first do a dry run on the test environment and check of everything went as expected. It is very easy to make a painfull mistake. When you made sure you know what you are doing, sign in and click on "Queues" -> "Queue settings". You should be able to change any RabbitMQ setting. 
+Be very carefull here, first do a dry run on the test environment and check of everything went as expected. It is very easy to make a painfull mistake. When you made sure you know what you are doing, sign in and click on "Queues" -> "Queue settings". You should be able to change any RabbitMQ queue related setting. 
 
 Under the hood this first creates a temporary exchange and a temporary queue, adds all the routing keys that the original queue had to the temp exchange / queue combo, removes the routing keys from the original queue, requeue's all the messages over the temp exchange, deletes the original queue, re-creates the original queue with new properties, then does the above steps in reverse to get the messages back and lastly removes the temp queue and exchange.
   
