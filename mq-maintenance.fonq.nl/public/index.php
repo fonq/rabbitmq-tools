@@ -4,7 +4,6 @@ use Classes\Template;
 use Classes\User;
 use Classes\Logger;
 
-
 require_once '../vendor/php-amqplib/php-amqplib/PhpAmqpLib/Helper/Protocol/Protocol091.php';
 require_once '../vendor/php-amqplib/php-amqplib/PhpAmqpLib/Channel/AbstractChannel.php';
 require_once '../vendor/php-amqplib/php-amqplib/PhpAmqpLib/Channel/AMQPChannel.php';
@@ -24,6 +23,23 @@ try
     {
        throw new Exception("Config file missing, did you create one?");
     }
+
+    $has_access = false;
+
+    $white_listed_ip_regexes = getConfig()['white_listed_ip_regexes'] ?? [];
+
+    foreach ($white_listed_ip_regexes as $regex)
+    {
+        if(preg_match($regex, $_SERVER['REMOTE_ADDR']))
+        {
+            $has_access = true;
+        }
+    }
+    if(!$has_access)
+    {
+        throw new RuntimeException("Your ip address " . $_SERVER['REMOTE_ADDR'] . " is not whitelisted for this tool. Please open a vpn connection or contact the administrator.");
+    }
+
     // Request URI without GET vars.
     $base_request_uri = strpos($_SERVER['REQUEST_URI'],'?') ? explode('?', $_SERVER['REQUEST_URI'])[0] : $_SERVER['REQUEST_URI'];
 
@@ -84,7 +100,7 @@ try
 {
     $parseData = [
         'title' => $controller->getTitle(),
-        'api_version' => $controller->getApiVersion(),
+        'api_version' => $controller instanceof \Controller\ExceptionPage ? null : $controller->getApiVersion(),
         'content' => $controller->getContent(),
         'selected_menu_item' => $controller->getSelectedMenuItem(),
         'status_message' => $controller->getStatusMessage()
