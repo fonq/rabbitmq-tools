@@ -1,5 +1,5 @@
 # RabbitMQ maintenance tool
-A webinterface for RabbitMQ that provides some functionality that is not available in their own installation.  Most prominently the possibility to "hot" change queue configurations. 
+A webinterface for RabbitMQ that provides some functionality that is not available in their own management tooling, most prominently the possibility to "hot" change queue configurations. 
 
 ### Installation
 
