@@ -103,6 +103,7 @@
 
 
                                 <table>
+                                    {{ dump( message.getProperties()) }}
                                     {% if message.getProperties().headers['x-death'] %}
                                         <tr>
                                             <td>Original queue</td>

@@ -215,6 +215,10 @@ class RabbitMq
      */
     function publishMessage($vhost, $exchange_name, MessageModel $model)
     {
+        if(empty($exchange_name))
+        {
+            $exchange_name = 'amq.direct';
+        }
         $endpoint = '/exchanges/' . rawurlencode($vhost) . '/' . rawurlencode($exchange_name) . '/publish';
         self::api()->post($endpoint, $model);
     }
