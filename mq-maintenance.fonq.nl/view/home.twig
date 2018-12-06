@@ -37,6 +37,8 @@
                             {{ queue.getName() }}</a>
                     </td>
                     <td class="c">
+
+
                         {% for argument_name, argument_value in queue.getArguments() %}
                             {% if argument_name == 'x-message-ttl' %}
                                 <abbr title="TTL: {{ argument_value }}">
@@ -51,10 +53,18 @@
                             {% endif %}
                         {% endfor %}
                         {% if queue.getDurable() %}
-                            <abbr class="policy">
+                            <abbr class="policy" title="Durable:true">
                                 D
                             </abbr>
                         {% endif %}
+
+                        {% if queue.getAutoDelete() %}
+                            <abbr class="policy" title="AD:true">
+                                AD
+                            </abbr>
+                        {% endif %}
+
+
                         {% if queue.getPolicy() %}
                             <abbr class="policy">
                                 <a href="#">

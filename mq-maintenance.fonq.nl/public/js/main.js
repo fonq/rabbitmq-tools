@@ -107,9 +107,6 @@ $(document).ready(function(){
         let field = $(this).attr('field');
         let row = $('#' + field).find('.mf tr').last();
 
-        console.log('#' + field);
-        console.log(row);
-
         let key = row.find('input').first();
         let value = row.find('input').last();
         let type = row.find('select').last();
@@ -118,4 +115,30 @@ $(document).ready(function(){
         type.val($(this).attr('type'));
         update_multifields();
     });
+
+
+    $('.requeue_button').click(function (e)
+    {
+        e.preventDefault();
+        var iScrollTop = $(document).scrollTop();
+        var formId = '#' + $(this).data('forform');
+        var formElement = $(formId);
+
+        $('.fld_scrollPos', formElement).val(iScrollTop);
+        formElement.trigger('submit');
+    });
+
+    var scrollToField = $('#fld_scroll_to');
+
+    if(scrollToField.length === 1)
+    {
+        $(document).scrollTop(scrollToField.val());
+    }
+
+    setTimeout(function () {
+        $('.autohide').fadeOut(200);
+    }, 2000)
+
+
+
 });

@@ -25,7 +25,7 @@ class Delete extends AbstractController
         {
             $binding = $this->getRabbitMq()->getBinding($vhost, $source, $queue, $properties_key);
             $binding->clear();
-            $this->addStatusMessage(new StatusMessage("Binding $properties_key deleted."));
+            $this->addStatusMessage(new StatusMessage("Binding $properties_key deleted.", true));
         }
         catch (\Exception $e)
         {

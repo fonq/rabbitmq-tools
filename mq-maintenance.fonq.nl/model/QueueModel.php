@@ -49,7 +49,6 @@ class QueueModel extends BaseModel
 
     function __construct($queue)
     {
-        // echo "<pre>" . print_r($queue, true) . "</pre>";
         $this->arguments = $queue['arguments'];
         $this->auto_delete = $queue['auto_delete'];
 
@@ -343,7 +342,7 @@ class QueueModel extends BaseModel
     {
         $this->arguments = $arguments;
     }
-    function setAutoDelete($auto_delete)
+    function setAutoDelete(bool $auto_delete)
     {
         $this->auto_delete = $auto_delete;
     }
@@ -354,6 +353,10 @@ class QueueModel extends BaseModel
     function getDurable()
     {
         return $this->durable;
+    }
+    function getAutoDelete()
+    {
+        return $this->auto_delete;
     }
     function getPolicy()
     {

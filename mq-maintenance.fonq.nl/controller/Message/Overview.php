@@ -16,22 +16,20 @@ class Overview extends AbstractController
     {
         return 'deadletter';
     }
-
     function getTitle(): string
     {
         return 'Queue contents';
     }
-
     function doPurge()
     {
         try
         {
             RabbitMq::instance()->purgeQueue($_GET['vhost_name'], $_GET['queue_name']);
-            $this->addStatusMessage((new StatusMessage('Messages deleted, if the queue is very large this might take a few seconds.')));
+            $this->addStatusMessage((new StatusMessage('Messages deleted, if the queue is very large this might take a few seconds.', true)));
         }
         catch (HttpException $e)
         {
-            $this->addStatusMessage((new StatusMessage('Could not purge queue.')));
+            $this->addStatusMessage((new StatusMessage('Could not purge queue.', true)));
         }
         $noVars = [
             'vhost_name' => $_GET['vhost_name'],
@@ -49,7 +47,7 @@ class Overview extends AbstractController
         try
         {
             RabbitMq::instance()->requeueAll($vhost_name, $queue_name);
-            $this->addStatusMessage(new StatusMessage("All messages requeued"));
+            $this->addStatusMessage(new StatusMessage("All messages requeued", true));
         }
         catch (HttpException $e)
         {
@@ -73,11 +71,12 @@ class Overview extends AbstractController
         $to_queue = $_POST['original_queue'];
         $limit = $_POST['limit'];
         $payload = $_POST['payload'];
+        $scroll_to = $_POST['scroll_to'];
 
         try
         {
             RabbitMq::instance()->requeueMessage($vhost_name, $queue_name, $to_queue, $delivery_tag, $payload);
-            $this->addStatusMessage(new StatusMessage("Message requeued"));
+            $this->addStatusMessage(new StatusMessage("Message requeued to $to_queue.", true));
         }
         catch (HttpException $e)
         {
@@ -88,12 +87,12 @@ class Overview extends AbstractController
                 'vhost_name' => $vhost_name,
                 'queue_name' => $queue_name,
                 'limit' => $limit,
+                'scroll_to' => $scroll_to
             ]);
 
         $this->redirect($return_url);
         exit();
     }
-
     function doDeleteMessage()
     {
         $vhost_name = $_GET['vhost_name'];
@@ -105,11 +104,11 @@ class Overview extends AbstractController
 
         if($item_deleted)
         {
-            $this->addStatusMessage(new StatusMessage("Message deleted"));
+            $this->addStatusMessage(new StatusMessage("Message deleted", true));
         }
         else
         {
-            $this->addStatusMessage(new StatusMessage("Could not find message, could not delete."));
+            $this->addStatusMessage(new StatusMessage("Could not find message, could not delete.", true));
         }
 
         $return_url = '/message/overview?' . http_build_query([
@@ -142,9 +141,11 @@ class Overview extends AbstractController
     function getContent(): string
     {
         DeferredAction::register('after_add_test_messages', $_SERVER['REQUEST_URI']);
-        $vhost_name = isset($_GET['vhost_name']) ? $_GET['vhost_name'] : null;
-        $queue_name = isset($_GET['queue_name']) ? $_GET['queue_name'] : null;
-        $limit = isset($_GET['limit']) ? $_GET['limit'] : 50;
+
+        $vhost_name = $_GET['vhost_name'] ?? null;
+        $queue_name = $_GET['queue_name'] ?? null;
+        $limit = $_GET['limit'] ?? 50;
+        $scroll_to = $_GET['scroll_to'] ?? 0;
 
         $vhosts = RabbitMq::instance()->getVHosts();
         $queues = RabbitMq::instance()->getQueues();
@@ -156,7 +157,6 @@ class Overview extends AbstractController
             $messages = $queue->getMessageList('ack_requeue_true', $limit);
         }
 
-
         $viewData = [
             'vhosts' => $vhosts,
             'queues' => $queues,
@@ -164,7 +164,8 @@ class Overview extends AbstractController
             'queue_name' => $queue_name,
             'limit' => $limit,
             'queue' => $queue,
-            'messages' => $messages
+            'messages' => $messages,
+            'scroll_to' => $scroll_to
         ];
         return Template::parse('message/overview.twig', $viewData);
     }
