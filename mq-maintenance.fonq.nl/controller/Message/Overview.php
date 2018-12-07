@@ -95,10 +95,10 @@ class Overview extends AbstractController
     }
     function doDeleteMessage()
     {
-        $vhost_name = $_GET['vhost_name'];
-        $queue_name = $_GET['queue_name'];
-        $limit = $_GET['limit'];
-        $delivery_tag = $_GET['delivery_tag'];
+        $vhost_name = $_REQUEST['vhost_name'];
+        $queue_name = $_REQUEST['queue_name'];
+        $limit = $_REQUEST['limit'];
+        $delivery_tag = $_REQUEST['delivery_tag'];
 
         $item_deleted = RabbitMq::instance()->deleteMessage($vhost_name, $queue_name, $delivery_tag);
 

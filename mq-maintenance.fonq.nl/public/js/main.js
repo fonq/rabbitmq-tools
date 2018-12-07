@@ -117,13 +117,16 @@ $(document).ready(function(){
     });
 
 
-    $('.requeue_button').click(function (e)
+    $('.delete_button, .requeue_button').click(function (e)
     {
         e.preventDefault();
         var iScrollTop = $(document).scrollTop();
         var formId = '#' + $(this).data('forform');
         var formElement = $(formId);
 
+        var _do = $(this).hasClass('delete_button') ? 'DeleteMessage' : 'Requeue';
+
+        $('.fld_do', formElement).val(_do);
         $('.fld_scrollPos', formElement).val(iScrollTop);
         formElement.trigger('submit');
     });
