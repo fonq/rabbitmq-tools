@@ -84,10 +84,10 @@ class Overview extends AbstractController
         }
 
         $return_url = '/message/overview?' . http_build_query([
-                'vhost_name' => $vhost_name,
-                'queue_name' => $queue_name,
-                'limit' => $limit,
-                'scroll_to' => $scroll_to
+            'vhost_name' => $vhost_name,
+            'queue_name' => $queue_name,
+            'limit' => $limit,
+            'scroll_to' => $scroll_to
             ]);
 
         $this->redirect($return_url);
@@ -99,6 +99,7 @@ class Overview extends AbstractController
         $queue_name = $_REQUEST['queue_name'];
         $limit = $_REQUEST['limit'];
         $delivery_tag = $_REQUEST['delivery_tag'];
+        $scroll_to = $_POST['scroll_to'];
 
         $item_deleted = RabbitMq::instance()->deleteMessage($vhost_name, $queue_name, $delivery_tag);
 
@@ -112,9 +113,10 @@ class Overview extends AbstractController
         }
 
         $return_url = '/message/overview?' . http_build_query([
-                'vhost_name' => $vhost_name,
-                'queue_name' => $queue_name,
-                'limit' => $limit,
+            'vhost_name' => $vhost_name,
+            'queue_name' => $queue_name,
+            'limit' => $limit,
+            'scroll_to' => $scroll_to
         ]);
 
         $this->redirect($return_url);

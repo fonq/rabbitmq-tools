@@ -95,8 +95,7 @@ class RabbitMq
                     "requeue" => $this->ack_requeue == 'ack_requeue_true' ? true : false,
                     "ackmode" => $this->ack_requeue, // we are offering the messages manually
                     "count" => $this->limit,
-                    "encoding" => "auto",
-                    "truncate" => 5000
+                    "encoding" => "auto"
                 ];
             }
         });
