@@ -13,86 +13,92 @@
             <a class="info f-right" href="/message/overview?vhost_name={{ vhost|url_encode }}&queue_name={{ queue.getName()|url_encode }}">
                 Queue contents
             </a>
-
             <input type="hidden" name="_do" value="ApplyChanges">
             <table class="form">
                 <tbody>
-                {#
-                <tr>
-                    <th><label>Name:</label></th>
-                    <td><input type="text" name="name"><span class="mand">*</span></td>
-                </tr>
-                #}
-                <tr>
-                    <th><label>Durability:</label></th>
-                    <td>
-                        <select name="durable">
-                            <option value="true">Durable</option>
-                            <option value="false">Transient</option>
-                        </select>
-                    </td>
-                </tr>
-
-                <tr>
-                    <th><label>Auto delete: <span class="help" id="queue-auto-delete"></span></label></th>
-                    <td>
-                        <select name="auto_delete">
-                            <option value="false">No</option>
-                            <option value="true">Yes</option>
-                        </select>
-                    </td>
-                </tr>
-
-                <tr>
-                    <th><label>Bindings: </label></th>
-                    <td>
-                        <table>
-                            <tr>
-                                <td><b>Source</b></td>
-                                <td><b>Routing key</b></td>
-                                <td><b>Destination</b></td>
-                            </tr>
-                            {% for binding in queue.getBindings() %}
+                    <tr>
+                        <th><label>Durability: </label></th>
+                        <td>
+                            <select name="durable">
+                                <option {{ queue.getDurable() ? 'selected' }} value="true">Durable</option>
+                                <option {{ not queue.getDurable() ? 'selected' }} value="false">Transient</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th><label>Auto delete: <span class="help" id="queue-auto-delete"></span></label></th>
+                        <td>
+                            <select name="auto_delete">
+                                <option {{ not queue.getAutoDelete() ? 'selected' }} value="false">No</option>
+                                <option {{ queue.getAutoDelete() ? 'selected' }} value="true">Yes</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th><label>Bindings: </label></th>
+                        <td>
+                            <table>
                                 <tr>
-                                    <td>{{ binding.getSource() ? binding.getSource() : '-' }}</td>
-                                    <td>
-
-                                        <a title="Generate some test messages for this routing key" href="/message/generate?vhost={{ binding.getVhost()|url_encode }}&routing_key={{ binding.getRoutingKey()|url_encode }}&exchange={{ binding.getSource()|url_encode }}">
-                                            {{ binding.getRoutingKey() }}
-
-                                        </a>
-                                    </td>
-                                    <td>
-                                        <a title="Have a look in the queue" href="/message/overview?vhost_name={{ binding.getVhost()|url_encode }}&queue_name={{ binding.getDestination()|url_encode }}">
-                                            {{ binding.getDestination() }}
-                                        </a>
-
-                                        {% if binding.getSource() %}
-                                            <a href="/queue/change?vhost={{ vhost|url_encode }}&source={{ binding.getSource()|url_encode }}&queue={{ binding.getDestination()|url_encode }}&properties_key={{ binding.getPropertiesKey()|url_encode }}&_do=SureDelete" title="Delete binding" class="red">[x]</a>
-                                        {% endif %}
-
-                                    </td>
+                                    <td><b>Source</b></td>
+                                    <td><b>Routing key</b></td>
+                                    <td><b>Destination</b></td>
                                 </tr>
-                            {% endfor %}
-                        </table>
-                    </td>
-                </tr>
+                                {% for binding in queue.getBindings() %}
+                                    <tr>
+                                        <td>{{ binding.getSource() ? binding.getSource() : '-' }}</td>
+                                        <td>
 
-                <tr>
-                    <th><label>Arguments:</label></th>
-                    <td>
-                        <div class="multifield" id="arguments">
-                            <table class="mf">
-                                <tbody>
-                                    {% for arg_key, arg_value in queue.getArguments() %}
+                                            <a title="Generate some test messages for this routing key" href="/message/generate?vhost={{ binding.getVhost()|url_encode }}&routing_key={{ binding.getRoutingKey()|url_encode }}&exchange={{ binding.getSource()|url_encode }}">
+                                                {{ binding.getRoutingKey() }}
+
+                                            </a>
+                                        </td>
+                                        <td>
+                                            <a title="Have a look in the queue" href="/message/overview?vhost_name={{ binding.getVhost()|url_encode }}&queue_name={{ binding.getDestination()|url_encode }}">
+                                                {{ binding.getDestination() }}
+                                            </a>
+
+                                            {% if binding.getSource() %}
+                                                <a href="/queue/change?vhost={{ vhost|url_encode }}&source={{ binding.getSource()|url_encode }}&queue={{ binding.getDestination()|url_encode }}&properties_key={{ binding.getPropertiesKey()|url_encode }}&_do=SureDelete" title="Delete binding" class="red">[x]</a>
+                                            {% endif %}
+
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </table>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th><label>Arguments:</label></th>
+                        <td>
+                            <div class="multifield" id="arguments">
+                                <table class="mf">
+                                    <tbody>
+                                        {% for arg_key, arg_value in queue.getArguments() %}
+                                            <tr>
+                                                <td>
+                                                    <input type="text" id="arguments_{{ loop.index }}_mfkey" name="arguments_{{ loop.index }}_mfkey" value="{{ arg_key }}">
+                                                </td>
+                                                <td class="equals">=</td>
+                                                <td>
+                                                    <input type="text" id="arguments_{{ loop.index }}_mfvalue" name="arguments_{{ loop.index }}_mfvalue" value="{{ arg_value }}">
+                                                    <select id="arguments_{{ loop.index }}_mftype" name="arguments_{{ loop.index }}_mftype">
+                                                        <option value="string">String</option>
+                                                        <option value="number">Number</option>
+                                                        <option value="boolean">Boolean</option>
+                                                        <option value="list">List</option>
+                                                    </select>
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
                                         <tr>
                                             <td>
-                                                <input type="text" id="arguments_{{ loop.index }}_mfkey" name="arguments_{{ loop.index }}_mfkey" value="{{ arg_key }}">
+                                                <input type="text" id="arguments_{{ queue.countArguments() + 1 }}_mfkey" name="arguments_{{ queue.countArguments() + 1 }}_mfkey" value="{{ arg_key }}">
                                             </td>
                                             <td class="equals">=</td>
                                             <td>
-                                                <input type="text" id="arguments_{{ loop.index }}_mfvalue" name="arguments_{{ loop.index }}_mfvalue" value="{{ arg_value }}">
-                                                <select id="arguments_{{ loop.index }}_mftype" name="arguments_{{ loop.index }}_mftype">
+                                                <input type="text" id="arguments_{{ queue.countArguments() + 1 }}_mfvalue" name="arguments_{{ queue.countArguments() + 1 }}_mfvalue" value="">
+                                                <select id="arguments_{{ queue.countArguments() + 1 }}_mftype" name="arguments_{{ queue.countArguments() + 1 }}_mftype">
                                                     <option value="string">String</option>
                                                     <option value="number">Number</option>
                                                     <option value="boolean">Boolean</option>
@@ -100,41 +106,25 @@
                                                 </select>
                                             </td>
                                         </tr>
-                                    {% endfor %}
-                                    <tr>
-                                        <td>
-                                            <input type="text" id="arguments_{{ queue.countArguments() + 1 }}_mfkey" name="arguments_{{ queue.countArguments() + 1 }}_mfkey" value="{{ arg_key }}">
-                                        </td>
-                                        <td class="equals">=</td>
-                                        <td>
-                                            <input type="text" id="arguments_{{ queue.countArguments() + 1 }}_mfvalue" name="arguments_{{ queue.countArguments() + 1 }}_mfvalue" value="">
-                                            <select id="arguments_{{ queue.countArguments() + 1 }}_mftype" name="arguments_{{ queue.countArguments() + 1 }}_mftype">
-                                                <option value="string">String</option>
-                                                <option value="number">Number</option>
-                                                <option value="boolean">Boolean</option>
-                                                <option value="list">List</option>
-                                            </select>
-                                        </td>
-                                    </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <table class="argument-links">
+                                <tbody>
+                                <tr>
+                                    <td>Add</td>
+                                    <td>
+                                        {% for argument_name, argument_properties in known_arguments %}
+                                            <span class="argument-link" field="arguments" key="{{ argument_name }}" type="{{ argument_properties.datatype == 'int' ? 'number' : argument_properties.datatype }}">{{ argument_properties.label }}</span>
+                                            {{ not loop.last ? '|' }}
+                                            {{ loop.index % 5 == 0 ? '<br>' }}
+                                        {% endfor %}
+                                    </td>
+                                </tr>
                                 </tbody>
                             </table>
-                        </div>
-                        <table class="argument-links">
-                            <tbody>
-                            <tr>
-                                <td>Add</td>
-                                <td>
-                                    {% for argument_name, argument_properties in known_arguments %}
-                                        <span class="argument-link" field="arguments" key="{{ argument_name }}" type="{{ argument_properties.datatype == 'int' ? 'number' : argument_properties.datatype }}">{{ argument_properties.label }}</span>
-                                        {{ not loop.last ? '|' }}
-                                        {{ loop.index % 5 == 0 ? '<br>' }}
-                                    {% endfor %}
-                                </td>
-                            </tr>
-                            </tbody>
-                        </table>
-                    </td>
-                </tr>
+                        </td>
+                    </tr>
                 </tbody>
             </table>
             <input type="submit" value="Change queue">

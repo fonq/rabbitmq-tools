@@ -6,11 +6,13 @@ use LogicException;
 class StatusMessage
 {
     private $text;
+    private $autoHide;
     private $buttons = [];
 
-    function __construct($text)
+    function __construct(string $text, bool $autoHide = false)
     {
         $this->text = $text;
+        $this->autoHide = $autoHide;
         return $this;
     }
     function addButton(StatusMessageButton $button)
@@ -20,8 +22,9 @@ class StatusMessage
     }
     function getHtml()
     {
+        $autoHide_str = $this->autoHide ? ' autohide' : '';
         $aOut = [];
-        $aOut[] = '<div class="form-popup-warn">';
+        $aOut[] = '<div class="form-popup-warn' . $autoHide_str . '">';
         $aOut[] = '     '.$this->text;
         $aOut[] = '<br>';
         $aOut[] = '<br>';

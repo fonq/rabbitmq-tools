@@ -1,5 +1,5 @@
+<input type="hidden" id="fld_scroll_to" value="{{ scroll_to }}">
 <div class="section-hidden section-visible">
-
     <h2>Queue messages {{ queue.getName() }}</h2>
     <div class="hider" style="display:block;">
         <form method="get" id="move_message_form" >
@@ -40,22 +40,19 @@
                     Requeue all
                 </a>
             {% endif %}
-
             <a class="danger f-right" href="/message/overview?vhost_name={{ vhost_name|url_encode }}&queue_name={{ queue_name|url_encode }}&limit={{ limit }}&_do=ConfirmPurge">
                 Purge queue
             </a>
-
             <a class="info f-right" href="/message/generate?vhost_name={{ vhost_name|url_encode }}&queue_name={{ queue_name|url_encode }}">
                 Add test message(s)
             </a>
-
             <a class="info f-right" href="/queue/change?vhost={{ vhost_name|url_encode }}&queue={{ queue_name|url_encode }}">
                 Queue settings
             </a>
         </form>
 
         {% if messages %}
-            <table class="form" style="margin-top:30px;">
+            <table class="form" style="margin-top:30px; width:100%">
                 <tbody>
                     <thead>
                         <tr>
@@ -65,42 +62,38 @@
                         </tr>
                     </thead>
                     {% for message in messages %}
-                        <form method="post" action="/message/overview">
-                            <input type="hidden" name="vhost_name" value="{{ vhost_name }}">
-                            <input type="hidden" name="queue_name" value="{{ queue_name }}">
-                            <input type="hidden" name="limit" value="{{ limit }}">
-                            <input type="hidden" name="delivery_tag" value="{{ loop.index }}">
-                            <input type="hidden" name="_do" value="Requeue">
-                            <input type="hidden" name="original_queue" value="{{ message.getProperties()['headers']['x-death'][0]['queue'] }}">
-                            <input type="hidden" name="exchange" value="{{ message.getProperties().headers['x-first-death-exchange'] }}">
                         <tr>
-                            <td style="vertical-align: top">
-                                {{ message.getRoutingKey() }}
+                            <td style="width:70%;">
+                                <form method="post" id="frm_{{ loop.index }}" class="track_scroll_form" action="/message/overview">
+                                    <input type="hidden" class="fld_scrollPos" name="scroll_to" value="0">
+                                    <input type="hidden" class="fld_do" name="_do" value="">
+                                    <input type="hidden" name="vhost_name" value="{{ vhost_name }}">
+                                    <input type="hidden" name="queue_name" value="{{ queue_name }}">
+                                    <input type="hidden" name="limit" value="{{ limit }}">
+                                    <input type="hidden" name="delivery_tag" value="{{ loop.index }}">
+                                    <input type="hidden" name="original_queue" value="{{ message.getProperties()['headers']['x-death'][0]['queue'] }}">
+                                    <input type="hidden" name="exchange" value="{{ message.getProperties().headers['x-first-death-exchange'] }}">
+                                    <textarea name="payload" style="width:100%;height:250px;overflow: scroll;border:1px solid black">{{ message.getPrettyfiedPayload() }}</textarea>
+                                </form>
                             </td>
-                            <td>
-                                <textarea name="payload" style="width:900px;height:250px;overflow: scroll;border:1px solid black">{{ message.getPrettyfiedPayload() }}</textarea>
-                            </td>
-                            <td style="vertical-align: top">
+                            <td style="vertical-align: top; width:30%;">
                                 <div style="margin-bottom: 20px;">
                                     {% if message.getProperties().headers['x-death'] is iterable %}
-                                        <a class="info" href="/queue/change?vhost={{ vhost_name|url_encode }}&queue={{ message.getProperties()['headers']['x-death'][0]['queue'] }}">
-                                            Queue settings
-                                        </a>
-
-                                        <a class="info" href="/message/overview?vhost_name={{ vhost_name|url_encode }}&queue_name={{ message.getProperties()['headers']['x-death'][0]['queue']|url_encode }}  ">
-                                            Queue contents
-                                        </a>
-
-                                        <button type="submit" class="info">
+                                        <button data-forform="frm_{{ loop.index }}" class="info requeue_button">
                                             Requeue
                                         </button>
                                     {% endif %}
+
+                                    <button data-forform="frm_{{ loop.index }}" class="danger delete_button">
+                                        Delete
+                                    </button>
+{#
                                     <a class="danger" href="/message/overview?vhost_name={{ vhost_name|url_encode }}&queue_name={{ queue_name|url_encode }}&limit={{ limit }}&_do=DeleteMessage&delivery_tag={{ loop.index }}">
                                         Delete
                                     </a>
+#}
                                     <div class="cl"></div>
                                 </div>
-
 
                                 <table>
                                     {% if message.getProperties().headers['x-death'] %}
@@ -122,6 +115,12 @@
                                                 {{ message.getProperties()['headers']['x-death'][0]['exchange'] ? message.getProperties()['headers']['x-death'][0]['exchange'] : 'Direct' }}
                                             </td>
                                         </tr>
+                                        <tr>
+                                            <td>Dead letter time</td>
+                                            <td>
+                                                {{ message.getProperties().headers['x-death'].time|date("m/d/Y H:m:s") }}
+                                            </td>
+                                        </tr>
                                     {% endif %}
                                     <tr>
                                         <td>Delivery mode</td>
@@ -131,11 +130,9 @@
                                         <td>Routing key</td>
                                         <td>{{ message.getProperties()['headers']['x-death'][0]['routing-keys'][0] }}</td>
                                     </tr>
-
                                 </table>
                             </td>
                         </tr>
-                        </form>
                     {% endfor %}
                 </tbody>
             </table>

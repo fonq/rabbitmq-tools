@@ -46,7 +46,7 @@ a.info, button.info{
     padding: 5px 5px;
     border-radius: 5px;
     border:1px solid black;
-    margin:0 5px 0 5px;
+    margin:0 5px 5px 5px;
 }
 
 a.info:hover, a.danger:hover

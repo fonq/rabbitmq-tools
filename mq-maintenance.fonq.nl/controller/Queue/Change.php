@@ -86,7 +86,7 @@ class Change extends AbstractController
         }
 
         $currentQueue->setDurable($_POST['durable'] == 'true');
-        $currentQueue->setAutoDelete($_POST['durable'] == 'true');
+        $currentQueue->setAutoDelete($_POST['auto_delete'] == 'true');
         $currentQueue->setArguments($arguments);
 
         // 5. Delete the queue that we want to change.
