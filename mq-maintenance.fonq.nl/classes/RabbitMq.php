@@ -212,14 +212,15 @@ class RabbitMq
      * @param MessageModel $model
      * @throws Exception\HttpException
      */
-    function publishMessage($vhost, $exchange_name, MessageModel $model)
+    function publishMessage($vhost, $exchange_name, MessageModel $model):array
     {
         if(empty($exchange_name))
         {
             $exchange_name = 'amq.direct';
         }
+
         $endpoint = '/exchanges/' . rawurlencode($vhost) . '/' . rawurlencode($exchange_name) . '/publish';
-        self::api()->post($endpoint, $model);
+        return self::api()->post($endpoint, $model);
     }
 
     /**
@@ -310,17 +311,19 @@ class RabbitMq
                 $message->setRoutingKey($routing_key);
                 $message->setPayload($payload);
 
-                $this->publishMessage($vhost_name, '', $message);
+                $result = $this->publishMessage($vhost_name, '', $message);
 
                 // Remove the message fom the dead letter queue if no exception was trown from publishMessage
                 $channel->basic_ack($original_message->delivery_info['delivery_tag']);
                 $channel->close();
                 $connection->close();
-                return true;
+
+                return $result['routed'];
             }
         }
         $channel->close();
         $connection->close();
+
         return false;
     }
     function deleteMessage($vhost_name, $queue_name, $message_position):bool
