@@ -8,7 +8,6 @@ use Classes\RabbitMq;
 use Classes\StatusMessage;
 use Classes\StatusMessageButton;
 use Classes\Template;
-use Model\MessageModel;
 
 class Overview extends AbstractController
 {
@@ -75,8 +74,16 @@ class Overview extends AbstractController
 
         try
         {
-            RabbitMq::instance()->requeueMessage($vhost_name, $queue_name, $to_queue, $delivery_tag, $payload);
-            $this->addStatusMessage(new StatusMessage("Message requeued to $to_queue.", true));
+            $message_requeued = RabbitMq::instance()->requeueMessage($vhost_name, $queue_name, $to_queue, $delivery_tag, $payload);
+            if($message_requeued)
+            {
+                $this->addStatusMessage(new StatusMessage("Message requeued to $to_queue.", true));
+            }
+            else
+            {
+                $this->addStatusMessage(new StatusMessage("Message was not deliverable."));
+            }
+
         }
         catch (HttpException $e)
         {
