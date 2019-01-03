@@ -8,7 +8,6 @@ use Classes\RabbitMq;
 use Classes\StatusMessage;
 use Classes\StatusMessageButton;
 use Classes\Template;
-use Model\MessageModel;
 
 class Overview extends AbstractController
 {
