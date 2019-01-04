@@ -117,21 +117,38 @@ $(document).ready(function(){
     });
 
 
-    $('.delete_button, .requeue_button').click(function (e)
+    $('.delete_button, .requeue_button, .dead_letter_button').click(function (e)
     {
         e.preventDefault();
-        var iScrollTop = $(document).scrollTop();
-        var formId = '#' + $(this).data('forform');
-        var formElement = $(formId);
+        let iScrollTop = $(document).scrollTop();
+        let formId = '#' + $(this).data('forform');
+        let formElement = $(formId);
+        let _do = '';
 
-        var _do = $(this).hasClass('delete_button') ? 'DeleteMessage' : 'Requeue';
+        if($(this).hasClass('delete_button'))
+        {
+            _do = 'DeleteMessage';
+        }
+        else if($(this).hasClass('requeue_button'))
+        {
+            _do = 'Requeue';
+        }
+        else if($(this).hasClass('dead_letter_button'))
+        {
+            _do = 'DeadLetter';
+        }
+        else
+        {
+            alert('That button is not supported yet.');
+        }
 
         $('.fld_do', formElement).val(_do);
+
         $('.fld_scrollPos', formElement).val(iScrollTop);
         formElement.trigger('submit');
     });
 
-    var scrollToField = $('#fld_scroll_to');
+    let scrollToField = $('#fld_scroll_to');
 
     if(scrollToField.length === 1)
     {
@@ -141,7 +158,5 @@ $(document).ready(function(){
     setTimeout(function () {
         $('.autohide').fadeOut(200);
     }, 2000)
-
-
 
 });

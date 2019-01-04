@@ -211,28 +211,30 @@ class RabbitMq
      * @param $exchange_name
      * @param MessageModel $model
      * @throws Exception\HttpException
+     * @return bool Returns true when the message was routed.
      */
-    function publishMessage($vhost, $exchange_name, MessageModel $model)
+    function publishMessage($vhost, $exchange_name, MessageModel $model):bool
     {
-        if(empty($exchange_name))
-        {
-            $exchange_name = 'amq.direct';
-        }
         $endpoint = '/exchanges/' . rawurlencode($vhost) . '/' . rawurlencode($exchange_name) . '/publish';
-        self::api()->post($endpoint, $model);
+        $response = self::api()->post($endpoint, $model);
+        return $response['routed'] ?? false;
     }
 
     /**
+     * Tries to Requeue all deadlettered messages in the given queue. When a message could not be routed (the api
+     * returns routed=0) we will not acknowledge. This leaves the message in the current queue.
+     *
      * @param $vhost_name
      * @param $from_queue
-     * @return bool
+     * @return array containing the amount of messages delivered and the amount of messages that failed.
      * @throws Exception\HttpException
      */
-    function requeueAll($vhost_name, $from_queue):bool
+    function requeueAll($vhost_name, $from_queue):array
     {
         $connection = new AMQPStreamConnection(getConfig()['api_hostname'], getConfig()['amqp_port'], User::getApiUser(), User::getApiPass(), $vhost_name);
         $channel = $connection->channel();
-
+        $delivered_message_counter = 0;
+        $failed_message_counter = 0;
         while($original_message = $channel->basic_get($from_queue)) {
             if (!$original_message instanceof AMQPMessage) {
                 throw new LogicException("Expected an instance of AMQPMessage.");
@@ -254,22 +256,33 @@ class RabbitMq
 
             $original_properties = $original_message->get_properties();
             $message = new MessageModel();
-            $message->setDeliveryMode($original_properties['delivery_mode']);
+            // Delivery mode is only available on newer versions of the API but mandatory.
+            $message->setDeliveryMode($original_properties['delivery_mode'] ?? 2);
             $message->setPayloadEncoding($original_message->getContentEncoding());
             $message->setExchange($exchange);
             $message->setVhost($vhost_name);
             $message->setRoutingKey($routing_key);
             $message->setPayload($original_message->getBody());
 
-            $this->publishMessage($vhost_name, '', $message);
+            $message_delivered = $this->publishMessage($vhost_name, '', $message);
 
-            // Remove the message fom the dead letter queue if no exception was trown from publishMessage
-            $channel->basic_ack($original_message->delivery_info['delivery_tag']);
+            if($message_delivered)
+            {
+                $delivered_message_counter ++;
+                // Remove the message fom the dead letter queue
+                // if no exception was trown from publishMessage
+                // and when routed=1 was returned from the API.
+                $channel->basic_ack($original_message->delivery_info['delivery_tag']);
+            }
+            else
+            {
+                $failed_message_counter ++;
+            }
         }
 
         $channel->close();
         $connection->close();
-        return true;
+        return ['delivered' => $delivered_message_counter, 'failed' => $failed_message_counter];
     }
     /**
      * @param $vhost_name
@@ -303,20 +316,59 @@ class RabbitMq
 
                 $original_properties = $original_message->get_properties();
                 $message = new MessageModel();
-                $message->setDeliveryMode($original_properties['delivery_mode']);
+                $message->setDeliveryMode($original_properties['delivery_mode'] ?? 2);
                 $message->setPayloadEncoding($original_message->getContentEncoding());
                 $message->setExchange($exchange);
                 $message->setVhost($vhost_name);
                 $message->setRoutingKey($routing_key);
                 $message->setPayload($payload);
 
-                $this->publishMessage($vhost_name, '', $message);
+                $message_delivered = $this->publishMessage($vhost_name, '', $message);
 
-                // Remove the message fom the dead letter queue if no exception was trown from publishMessage
-                $channel->basic_ack($original_message->delivery_info['delivery_tag']);
+                if($message_delivered)
+                {
+                    // Remove the message fom the dead letter queue
+                    // if no exception was trown from publishMessage
+                    // and when routed=1 was returned from the API.
+                    $channel->basic_ack($original_message->delivery_info['delivery_tag']);
+                }
                 $channel->close();
                 $connection->close();
-                return true;
+
+                return $message_delivered;
+            }
+        }
+        $channel->close();
+        $connection->close();
+
+        return false;
+    }
+    /**
+     * Consumes the message and then rejects it. Delivery tag is a id for each message number per channel per queue per
+     * message.
+     *
+     * @param $vhost_name
+     * @param $from_queue
+     * @param $delivery_tag
+     * @return bool
+     */
+    function deadLetterMessage($vhost_name, $from_queue, $delivery_tag):bool
+    {
+        $connection = new AMQPStreamConnection(getConfig()['api_hostname'], getConfig()['amqp_port'], User::getApiUser(), User::getApiPass(), $vhost_name);
+        $channel = $connection->channel();
+        $_SESSION['channel'] = $channel;
+
+        for($i = 1; $i <= $delivery_tag; $i++)
+        {
+            $original_message = $channel->basic_get($from_queue);
+
+            if(!$original_message instanceof AMQPMessage)
+            {
+                throw new LogicException("Expected an instance of AMQPMessage.");
+            }
+
+            if($i == $delivery_tag) {
+                $channel->basic_reject($delivery_tag, false);
             }
         }
         $channel->close();

@@ -8,7 +8,6 @@ use Classes\RabbitMq;
 use Classes\StatusMessage;
 use Classes\StatusMessageButton;
 use Classes\Template;
-use Model\MessageModel;
 
 class Overview extends AbstractController
 {
@@ -46,8 +45,17 @@ class Overview extends AbstractController
 
         try
         {
-            RabbitMq::instance()->requeueAll($vhost_name, $queue_name);
-            $this->addStatusMessage(new StatusMessage("All messages requeued", true));
+            $result = RabbitMq::instance()->requeueAll($vhost_name, $queue_name);
+
+            if($result['failed'] === 0)
+            {
+                $this->addStatusMessage(new StatusMessage("All {$result['delivered']} messages have been requeued.", true));
+            }
+            else
+            {
+                $this->addStatusMessage(new StatusMessage("{$result['delivered']} messages have been requeued, {$result['failed']} could not be routed.", true));
+            }
+
         }
         catch (HttpException $e)
         {
@@ -75,8 +83,18 @@ class Overview extends AbstractController
 
         try
         {
-            RabbitMq::instance()->requeueMessage($vhost_name, $queue_name, $to_queue, $delivery_tag, $payload);
-            $this->addStatusMessage(new StatusMessage("Message requeued to $to_queue.", true));
+
+            $message_delivered = RabbitMq::instance()->requeueMessage($vhost_name, $queue_name, $to_queue, $delivery_tag, $payload);
+
+            if($message_delivered)
+            {
+                $this->addStatusMessage(new StatusMessage("Message requeued to $to_queue.", true));
+            }
+            else
+            {
+                $this->addStatusMessage(new StatusMessage("The API replied that the message is not routable, does the queue $to_queue still exist?"));
+            }
+
         }
         catch (HttpException $e)
         {
@@ -93,6 +111,35 @@ class Overview extends AbstractController
         $this->redirect($return_url);
         exit();
     }
+
+    function doDeadLetter()
+    {
+        $vhost_name = $_POST['vhost_name'];
+        $queue_name = $_POST['queue_name'];
+        $delivery_tag = $_POST['delivery_tag'];
+        $scroll_to = $_POST['scroll_to'];
+
+        try
+        {
+            RabbitMq::instance()->deadLetterMessage($vhost_name, $queue_name, $delivery_tag);
+            $this->addStatusMessage(new StatusMessage("Message has been dead lettered.", true));
+        }
+        catch (HttpException $e)
+        {
+            $this->addStatusMessage(new StatusMessage("Could not requeue message:  " . $e->getMessage()));
+        }
+
+        $return_url = '/message/overview?' . http_build_query([
+                'vhost_name' => $vhost_name,
+                'queue_name' => $queue_name,
+                'limit' => $limit,
+                'scroll_to' => $scroll_to
+            ]);
+
+        $this->redirect($return_url);
+        exit();
+    }
+
     function doDeleteMessage()
     {
         $vhost_name = $_REQUEST['vhost_name'];

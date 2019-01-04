@@ -52,6 +52,10 @@
         </form>
 
         {% if messages %}
+            <div>
+
+
+            </div>
             <table class="form" style="margin-top:30px; width:100%">
                 <tbody>
                     <thead>
@@ -65,6 +69,22 @@
                         <tr>
                             <td style="width:70%;">
                                 <form method="post" id="frm_{{ loop.index }}" class="track_scroll_form" action="/message/overview">
+                                    {% if message.getProperties().headers['x-death'] is iterable %}
+                                        Requeue to queue:
+                                        <select name="original_queue">
+                                            {% if  message.getProperties()['headers']['x-death'][0]['queue'] %}
+                                                <option value="">Please choose a queue</option>
+                                                {% for queue_item in queues %}
+                                                    <option {{ message.getProperties()['headers']['x-death'][0]['queue'] == queue_item.getName() ? 'selected' }}>
+                                                        {{ queue_item.getName() }}
+                                                    </option>
+                                                {% endfor %}
+                                            {% else %}
+                                                <option value="">Choose a vhost first</option>
+                                            {% endif %}
+                                        </select>
+                                    {% endif %}
+                                    <textarea name="payload" style="width:100%;height:250px;overflow: scroll;border:1px solid black">{{ message.getPrettyfiedPayload() }}</textarea>
                                     <input type="hidden" class="fld_scrollPos" name="scroll_to" value="0">
                                     <input type="hidden" class="fld_do" name="_do" value="">
                                     <input type="hidden" name="vhost_name" value="{{ vhost_name }}">
@@ -73,7 +93,6 @@
                                     <input type="hidden" name="delivery_tag" value="{{ loop.index }}">
                                     <input type="hidden" name="original_queue" value="{{ message.getProperties()['headers']['x-death'][0]['queue'] }}">
                                     <input type="hidden" name="exchange" value="{{ message.getProperties().headers['x-first-death-exchange'] }}">
-                                    <textarea name="payload" style="width:100%;height:250px;overflow: scroll;border:1px solid black">{{ message.getPrettyfiedPayload() }}</textarea>
                                 </form>
                             </td>
                             <td style="vertical-align: top; width:30%;">
@@ -82,16 +101,16 @@
                                         <button data-forform="frm_{{ loop.index }}" class="info requeue_button">
                                             Requeue
                                         </button>
+                                    {% else %}
+                                        <button title="Consume the message and then sends a message reject." data-forform="frm_{{ loop.index }}" class="danger dead_letter_button">
+                                            Dead letter
+                                        </button>
                                     {% endif %}
 
                                     <button data-forform="frm_{{ loop.index }}" class="danger delete_button">
                                         Delete
                                     </button>
-{#
-                                    <a class="danger" href="/message/overview?vhost_name={{ vhost_name|url_encode }}&queue_name={{ queue_name|url_encode }}&limit={{ limit }}&_do=DeleteMessage&delivery_tag={{ loop.index }}">
-                                        Delete
-                                    </a>
-#}
+
                                     <div class="cl"></div>
                                 </div>
 
