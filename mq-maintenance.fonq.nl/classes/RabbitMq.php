@@ -255,7 +255,8 @@ class RabbitMq
 
             $original_properties = $original_message->get_properties();
             $message = new MessageModel();
-            $message->setDeliveryMode($original_properties['delivery_mode']);
+            // Delivery mode is only available on newer versions of the API but mandatory.
+            $message->setDeliveryMode($original_properties['delivery_mode'] ?? 2);
             $message->setPayloadEncoding($original_message->getContentEncoding());
             $message->setExchange($exchange);
             $message->setVhost($vhost_name);
