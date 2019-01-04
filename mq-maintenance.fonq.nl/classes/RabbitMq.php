@@ -303,8 +303,9 @@ class RabbitMq
                 $exchange = '';
                 $routing_key = $to_queue;
 
+                $original_properties = $original_message->get_properties();
                 $message = new MessageModel();
-                $message->setDeliveryMode(2);
+                $message->setDeliveryMode($original_properties['delivery_mode'] ?? 2);
                 $message->setPayloadEncoding($original_message->getContentEncoding());
                 $message->setExchange($exchange);
                 $message->setVhost($vhost_name);
