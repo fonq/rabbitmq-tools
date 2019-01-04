@@ -124,6 +124,7 @@ $(document).ready(function(){
         var formId = '#' + $(this).data('forform');
         var formElement = $(formId);
 
+        $('.fld_do', formElement).val('Requeue');
         $('.fld_scrollPos', formElement).val(iScrollTop);
         formElement.trigger('submit');
     });

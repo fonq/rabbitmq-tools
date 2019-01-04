@@ -45,8 +45,17 @@ class Overview extends AbstractController
 
         try
         {
-            RabbitMq::instance()->requeueAll($vhost_name, $queue_name);
-            $this->addStatusMessage(new StatusMessage("All messages requeued", true));
+            $result = RabbitMq::instance()->requeueAll($vhost_name, $queue_name);
+
+            if($result['failed'] === 0)
+            {
+                $this->addStatusMessage(new StatusMessage("All {$result['delivered']} messages have been requeued.", true));
+            }
+            else
+            {
+                $this->addStatusMessage(new StatusMessage("{$result['delivered']} messages have been requeued, {$result['failed']} could not be routed.", true));
+            }
+
         }
         catch (HttpException $e)
         {
@@ -74,8 +83,17 @@ class Overview extends AbstractController
 
         try
         {
-            RabbitMq::instance()->requeueMessage($vhost_name, $queue_name, $to_queue, $delivery_tag, $payload);
+            $message_delivered = RabbitMq::instance()->requeueMessage($vhost_name, $queue_name, $to_queue, $delivery_tag, $payload);
             $this->addStatusMessage(new StatusMessage("Message requeued to $to_queue.", true));
+
+            if(!$message_delivered)
+            {
+                $this->addStatusMessage(new StatusMessage("The API replied that the message is not routable, does the queue $to_queue still exist?"));
+            }
+            else
+            {
+                $this->addStatusMessage(new StatusMessage("Message requeued."));
+            }
         }
         catch (HttpException $e)
         {

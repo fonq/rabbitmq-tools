@@ -212,24 +212,30 @@ class RabbitMq
      * @param $exchange_name
      * @param MessageModel $model
      * @throws Exception\HttpException
+     * @return bool Returns true when the message was routed.
      */
     function publishMessage($vhost, $exchange_name, MessageModel $model)
     {
         $endpoint = '/exchanges/' . rawurlencode($vhost) . '/' . rawurlencode($exchange_name) . '/publish';
-        self::api()->post($endpoint, $model);
+        $response = self::api()->post($endpoint, $model);
+        return $response['routed'] ?? false;
     }
 
     /**
+     * Tries to Requeue all deadlettered messages in the given queue. When a message could not be routed (the api
+     * returns routed=0) we will not acknowledge. This leaves the message in the current queue.
+     *
      * @param $vhost_name
      * @param $from_queue
-     * @return bool
+     * @return array containing the amount of messages delivered and the amount of messages that failed.
      * @throws Exception\HttpException
      */
     function requeueAll($vhost_name, $from_queue):bool
     {
         $connection = new AMQPStreamConnection(getConfig()['api_hostname'], getConfig()['amqp_port'], User::getApiUser(), User::getApiPass(), $vhost_name);
         $channel = $connection->channel();
-
+        $delivered_message_counter = 0;
+        $failed_message_counter = 0;
         while($original_message = $channel->basic_get($from_queue)) {
             if (!$original_message instanceof AMQPMessage) {
                 throw new LogicException("Expected an instance of AMQPMessage.");
@@ -259,15 +265,25 @@ class RabbitMq
             $message->setRoutingKey($routing_key);
             $message->setPayload($original_message->getBody());
 
-            $this->publishMessage($vhost_name, '', $message);
+            $message_delivered = $this->publishMessage($vhost_name, '', $message);
 
-            // Remove the message fom the dead letter queue if no exception was trown from publishMessage
-            $channel->basic_ack($original_message->delivery_info['delivery_tag']);
+            if($message_delivered)
+            {
+                $delivered_message_counter ++;
+                // Remove the message fom the dead letter queue
+                // if no exception was trown from publishMessage
+                // and when routed=1 was returned from the API.
+                $channel->basic_ack($original_message->delivery_info['delivery_tag']);
+            }
+            else
+            {
+                $failed_message_counter ++;
+            }
         }
 
         $channel->close();
         $connection->close();
-        return true;
+        return ['delivered' => $message_delivered, 'failed' => $failed_message_counter];
     }
     /**
      * @param $vhost_name
@@ -308,13 +324,18 @@ class RabbitMq
                 $message->setRoutingKey($routing_key);
                 $message->setPayload($payload);
 
-                $this->publishMessage($vhost_name, '', $message);
+                $message_delivered = $this->publishMessage($vhost_name, '', $message);
 
-                // Remove the message fom the dead letter queue if no exception was trown from publishMessage
-                $channel->basic_ack($original_message->delivery_info['delivery_tag']);
+                if($message_delivered)
+                {
+                    // Remove the message fom the dead letter queue
+                    // if no exception was trown from publishMessage
+                    // and when routed=1 was returned from the API.
+                    $channel->basic_ack($original_message->delivery_info['delivery_tag']);
+                }
                 $channel->close();
                 $connection->close();
-                return true;
+                return $message_delivered;
             }
         }
         $channel->close();
