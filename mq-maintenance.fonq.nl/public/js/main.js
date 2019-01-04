@@ -124,8 +124,8 @@ $(document).ready(function(){
         var formId = '#' + $(this).data('forform');
         var formElement = $(formId);
 
-        var _do = $(this).hasClass('delete_button') ? 'DeleteMessage' : 'Requeue';
 
+        var _do = $(this).hasClass('delete_button') ? 'DeleteMessage' : 'Requeue';
         $('.fld_do', formElement).val(_do);
         $('.fld_scrollPos', formElement).val(iScrollTop);
         formElement.trigger('submit');
