@@ -101,16 +101,16 @@
                                         <button data-forform="frm_{{ loop.index }}" class="info requeue_button">
                                             Requeue
                                         </button>
+                                    {% else %}
+                                        <button title="Consume the message and then sends a message reject." data-forform="frm_{{ loop.index }}" class="danger dead_letter_button">
+                                            Dead letter
+                                        </button>
                                     {% endif %}
 
                                     <button data-forform="frm_{{ loop.index }}" class="danger delete_button">
                                         Delete
                                     </button>
-{#
-                                    <a class="danger" href="/message/overview?vhost_name={{ vhost_name|url_encode }}&queue_name={{ queue_name|url_encode }}&limit={{ limit }}&_do=DeleteMessage&delivery_tag={{ loop.index }}">
-                                        Delete
-                                    </a>
-#}
+
                                     <div class="cl"></div>
                                 </div>
 

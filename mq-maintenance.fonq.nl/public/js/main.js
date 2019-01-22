@@ -1,3 +1,5 @@
+import {$} from "../../../node-tools/public/js/app";
+
 $(document).ready(function(){
     function multifield_input(prefix, suffix, type) {
         if (type === 'hidden' ) {
@@ -76,34 +78,33 @@ $(document).ready(function(){
         }
     }
     function update_multifields() {
-        $('div.multifield').each(function(index) {
+        $('div.multifield').each(function() {
             update_multifield($(this), true);
         });
     }
-    $('#generate_messages_button').click(function (e) {
+    $('#generate_messages_button').on('click', function (e) {
         e.preventDefault();
         $('#fld_do').val('PublishMessages');
         $('#generate_messages_form').trigger('submit');
     });
-    $('#move_messases_btn').click(function (e) {
+    $('#move_messases_btn').on('click', function (e) {
         e.preventDefault();
         $('#fld_do').val('MoveMessages');
         $('#move_message_form').trigger('submit');
     });
-    $('.autosubmit').change(function(e){
+    $('.autosubmit').on('change', function(){
         $(this).closest('form').trigger('submit');
-
     });
-    $('#close_dialog').click(function (e) {
+    $('#close_dialog').on('click', function (e) {
         e.preventDefault();
         $(this).parent().remove();
     });
-    $('.form-popup-warn span').click(function (e) {
+    $('.form-popup-warn span').on('click', function () {
         alert('close');
         $('.form-popup-warn').remove();
     });
 
-    $('.argument-link').click(function() {
+    $('.argument-link').on('click', function() {
         let field = $(this).attr('field');
         let row = $('#' + field).find('.mf tr').last();
 
@@ -117,31 +118,42 @@ $(document).ready(function(){
     });
 
 
-    $('.delete_button, .requeue_button').click(function (e)
+    $('.delete_button, .requeue_button, .dead_letter_button').on('click', function (e)
     {
         e.preventDefault();
-        var iScrollTop = $(document).scrollTop();
-        var formId = '#' + $(this).data('forform');
-        var formElement = $(formId);
+        let iScrollTop = $(document).scrollTop;
+        let formId = '#' + $(this).data('forform');
+        let formElement = $(formId);
+        let _do = '';
 
+        if($(this).hasClass('delete_button'))
+        {
+            _do = 'DeleteMessage';
+        }
+        else if($(this).hasClass('requeue_button'))
+        {
+            _do = 'Requeue';
+        }
+        else if($(this).hasClass('dead_letter_button'))
+        {
+            _do = 'DeadLetter';
+        }
+        else
+        {
+            alert('That button is not supported yet.');
+        }
 
-        var _do = $(this).hasClass('delete_button') ? 'DeleteMessage' : 'Requeue';
         $('.fld_do', formElement).val(_do);
         $('.fld_scrollPos', formElement).val(iScrollTop);
         formElement.trigger('submit');
     });
 
-    var scrollToField = $('#fld_scroll_to');
-
+    let scrollToField = $('#fld_scroll_to');
     if(scrollToField.length === 1)
     {
-        $(document).scrollTop(scrollToField.val());
+        $(document).scrollTop = scrollToField.val();
     }
-
     setTimeout(function () {
         $('.autohide').fadeOut(200);
     }, 2000)
-
-
-
 });
