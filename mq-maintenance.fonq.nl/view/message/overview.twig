@@ -140,7 +140,13 @@
                                     </tr>
                                     <tr>
                                         <td>Routing key</td>
-                                        <td>{{ message.getProperties()['headers']['x-death'][0]['routing-keys'][0] }}</td>
+                                        <td>
+                                            {% if message.getRoutingKey() %}
+                                                {{ message.getRoutingKey() }}
+                                            {% else %}
+                                                {{ message.getProperties()['headers']['x-death'][0]['routing-keys'][0] }}
+                                            {% endif %}
+                                        </td>
                                     </tr>
                                 </table>
                             </td>
