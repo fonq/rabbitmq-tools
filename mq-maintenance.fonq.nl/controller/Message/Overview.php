@@ -83,16 +83,16 @@ class Overview extends AbstractController
 
         try
         {
-            $message_delivered = RabbitMq::instance()->requeueMessage($vhost_name, $queue_name, $to_queue, $delivery_tag, $payload);
-            $this->addStatusMessage(new StatusMessage("Message requeued to $to_queue.", true));
 
-            if(!$message_delivered)
+            $message_delivered = RabbitMq::instance()->requeueMessage($vhost_name, $queue_name, $to_queue, $delivery_tag, $payload);
+
+            if($message_delivered)
             {
-                $this->addStatusMessage(new StatusMessage("The API replied that the message is not routable, does the queue $to_queue still exist?"));
+                $this->addStatusMessage(new StatusMessage("Message requeued to $to_queue.", true));
             }
             else
             {
-                $this->addStatusMessage(new StatusMessage("Message requeued."));
+                $this->addStatusMessage(new StatusMessage("The API replied that the message is not routable, does the queue $to_queue still exist?"));
             }
         }
         catch (HttpException $e)
@@ -110,6 +110,34 @@ class Overview extends AbstractController
         $this->redirect($return_url);
         exit();
     }
+
+    function doDeadLetter()
+    {
+        $vhost_name = $_POST['vhost_name'];
+        $queue_name = $_POST['queue_name'];
+        $delivery_tag = $_POST['delivery_tag'];
+        $scroll_to = $_POST['scroll_to'];
+
+        try
+        {
+            RabbitMq::instance()->deadLetterMessage($vhost_name, $queue_name, $delivery_tag);
+            $this->addStatusMessage(new StatusMessage("Message has been dead lettered.", true));
+        }
+        catch (\LogicException $e)
+        {
+            $this->addStatusMessage(new StatusMessage("Could not requeue message:  " . $e->getMessage()));
+        }
+
+        $return_url = '/message/overview?' . http_build_query([
+                'vhost_name' => $vhost_name,
+                'queue_name' => $queue_name,
+                'scroll_to' => $scroll_to
+            ]);
+
+        $this->redirect($return_url);
+        exit();
+    }
+
     function doDeleteMessage()
     {
         $vhost_name = $_REQUEST['vhost_name'];

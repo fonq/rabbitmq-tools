@@ -323,7 +323,6 @@ class RabbitMq
                 $message->setRoutingKey($routing_key);
                 $message->setPayload($payload);
 
-
                 $message_delivered = $this->publishMessage($vhost_name, '', $message);
 
                 if($message_delivered)
@@ -342,6 +341,39 @@ class RabbitMq
         $channel->close();
         $connection->close();
 
+        return false;
+    }
+    /**
+     * Consumes the message and then rejects it. Delivery tag is a id for each message number per channel per queue per
+     * message.
+     *
+     * @param $vhost_name
+     * @param $from_queue
+     * @param $delivery_tag
+     * @return bool
+     * @throws LogicException
+     */
+    function deadLetterMessage($vhost_name, $from_queue, $delivery_tag):bool
+    {
+        $connection = new AMQPStreamConnection(getConfig()['api_hostname'], getConfig()['amqp_port'], User::getApiUser(), User::getApiPass(), $vhost_name);
+        $channel = $connection->channel();
+        $_SESSION['channel'] = $channel;
+
+        for($i = 1; $i <= $delivery_tag; $i++)
+        {
+            $original_message = $channel->basic_get($from_queue);
+
+            if(!$original_message instanceof AMQPMessage)
+            {
+                throw new LogicException("Expected an instance of AMQPMessage.");
+            }
+
+            if($i == $delivery_tag) {
+                $channel->basic_reject($delivery_tag, false);
+            }
+        }
+        $channel->close();
+        $connection->close();
         return false;
     }
     function deleteMessage($vhost_name, $queue_name, $message_position):bool
